@@ -1,0 +1,136 @@
+@font-face {
+  font-family: 'Flavour';
+  src: url("../webfonts/Flavour-Medium.otf");
+}
+
+a {
+  text-decoration: none;
+  -moz-transition: all 1s;
+  -o-transition: all 1s;
+  -webkit-transition: all 1s;
+  transition: all 1s;
+  font-family: "Flavour", Georgia, serif !important;
+  font-size: inherit;
+}
+
+.font-flavour, .uk-content h1, .uk-content h2, .uk-content h3, .uk-content h4, .uk-content h5, .uk-content h6{
+  font-family: "Flavour", Georgia, serif;
+  color: #004899 !important;
+}
+
+.single-font-flavour{
+  font-family: "Flavour", Georgia, serif;
+}
+
+#header{
+  color: #000000 !important;
+}
+
+#header .nav-top{
+  /*background-color: rgba(0,0,0,.5);*/
+  padding: 30px 40px;
+}
+
+#header .uk-navbar-nav>li.uk-active>a, #header  .uk-navbar-nav>li>a:hover{
+  color: #004899;
+}
+
+.uk-logo img{
+  height: 80px;
+}
+
+.uk-logo-mobile img{
+  height: 60px;
+}
+
+.uk-icon-button{
+  margin-left: 10px;
+}
+
+
+.uk-icon-facebook, .uk-icon-facebook:hover{
+  background-color:#004899;
+  color: #ffffff !important;
+}
+
+.uk-icon-youtube, .uk-icon-youtube:hover{
+  background-color:#df2e30;
+  color: #ffffff !important;
+}
+
+.uk-icon-instagram, .uk-icon-instagram:hover{
+  background-color: #5851DB;
+  color: #ffffff !important;
+}
+
+.concept {
+  background: #004899;
+  border-radius: 30px;
+  color: #fff;
+  font-size: 19px;
+  text-indent: 2px;
+  text-align: justify;
+
+}
+
+.concept .uk-list>li::before{
+  content: "\2713";
+  background-image: none;
+  display: inline-block;
+  color: yellow;
+  font-size: 20px;
+  text-align: center;
+}
+
+.concept strong, .concept b{
+  color: yellow !important;
+}
+
+.uk-button-primary, .uk-button-primary:hover {
+  background-color: #ffdd00;
+  color: #004899;
+  border: 1px solid transparent;
+  font-size: 18px;
+}
+
+.uk-overlay-mo{
+  background: rgba(34,34,34,0.6);
+}
+
+.uk-section-mo{
+  background: rgba(251, 193, 3, 0.04);
+}
+
+.uk-card-badge-mo {
+  position: absolute;
+  bottom: 160px;
+  right: 0;
+  z-index: 1;
+}
+
+.uk-label-mo {
+  background-color: #000000;
+  color: #fff;
+}
+
+.uk-text-white{
+  color: #ffffff !important;
+}
+
+.uk-text-xsmall{
+  font-size: 0.7rem;
+  line-height: 1.5;
+}
+
+
+#offcanvas-nav-primary .uk-offcanvas-bar{
+  background-color: #fff !important;
+}
+
+#offcanvas-nav-primary .uk-nav-default a{
+  color: #999 !important;
+}
+
+#offcanvas-nav-primary .uk-nav-default li.uk-active a{
+  color: #004899 !important;
+}

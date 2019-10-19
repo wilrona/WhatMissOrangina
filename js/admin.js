@@ -1,0 +1,3 @@
+// TypeRocket.redactorSettings = {
+//     buttons: ['image']
+// }
