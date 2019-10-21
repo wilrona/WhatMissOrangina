@@ -1,55 +1,32 @@
 <?php /* Template Name: Page de parrainage */ ?>
 
-<?php get_header(); ?>
+
 
 <?php
 
-use App\Controllers\FacebookController;
-use Facebook\Exceptions\FacebookResponseException;
-use Facebook\Exceptions\FacebookSDKException;
-
-if(isset($_SESSION) && isset($_SESSION['token_fb'])) {
-
-    $facebook = new FacebookController();
-
-    $fb = $facebook->set_facebook();
-    $fb->setDefaultAccessToken($_SESSION['token_fb']);
-
-    try {
-        $response = $fb->get('/me?locale=en_US&fields=id,name,email, first_name, last_name');
-        $userNode = $response->getGraphUser();
-
-//        if ($userNode->getField('gender') == "male") {
-//            return tr_view('inscription/error');
-//        }
-
-    } catch (FacebookResponseException $e) {
-        session_destroy();
-        return tr_redirect()->back()->now();
-    } catch (FacebookSDKException $e) {
-        session_destroy();
-        return tr_redirect()->back()->now();
-    }
+if(isset($_GET['idfacebook']) && !empty($_GET['idfacebook'])){
 
     $args = [
-            'post_type' => 'inscrit',
-            'meta_query' => array(
-                    array(
-                            'key' => 'idfacebook',
-                            'value' => $userNode->getField('id'),
-                            'compare' => '='
-                    ),
-                array(
-                        'key' => 'year_participe',
-                        'value' => tr_options_field('options.ins_year'),
-                        'compare' => '='
-                )
+        'post_type' => 'inscrit',
+        'meta_query' => array(
+            array(
+                'key' => 'idfacebook',
+                'value' => $_GET['idfacebook'],
+                'compare' => '='
+            ),
+            array(
+                'key' => 'year_participe',
+                'value' => tr_options_field('options.ins_year'),
+                'compare' => '='
             )
+        )
     ];
 
     $candidat = query_posts($args);
 
-    $id = $userNode->getField('id');
+    wp_reset_query();
+
+    $id = $_GET['idfacebook'];
 
     if(!$candidat){
         flash('error-data-inscription', 'Veuillez vous inscrire au préalable.', 'uk-text-warning');
@@ -58,11 +35,13 @@ if(isset($_SESSION) && isset($_SESSION['token_fb'])) {
 
 }
 else{
-    return tr_redirect()->back()->now();
+    flash('error-data-inscription', 'Veuillez vous inscrire au préalable.', 'uk-text-warning');
+    return tr_redirect()->toUrl(get_post_permalink(tr_options_field('options.page_form')));
 }
 
-
 ?>
+
+<?php get_header(); ?>
 
 <?php while (have_posts()) : the_post(); ?>
 

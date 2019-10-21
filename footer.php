@@ -82,7 +82,7 @@
             if (response.status === 'connected') {
                 if(grantedScopes.indexOf('email') !== -1 || grantedScopes.indexOf('contact_email') !== -1){
 
-                    window.location.replace('<?= tr_redirect()->toHome('facebook/vote/')->url; ?>'+idcandidat+'/'+idselection);
+                    window.location.replace('<?= tr_redirect()->toHome('facebook/vote/', '')->url; ?>'+idcandidat+'/'+idselection);
 
                 } else {
                     FB.api("/me/permissions", "delete", function(response){

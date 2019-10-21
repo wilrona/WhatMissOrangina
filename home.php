@@ -110,7 +110,7 @@
 
                     <li>
 
-                        <div class="uk-child-width-1-2@l uk-flex uk-flex-center" uk-grid>
+                        <div class="uk-child-width-1-2@l uk-flex uk-flex-center" uk-grid uk-height-match=".uk-card">
 
                             <?php foreach (tr_posts_field('list_lieux', $post_lieu->ID) as $fixe): ?>
                                 <div>
@@ -121,7 +121,7 @@
                                         </div>
                                         <div class="uk-width-1-2@l uk-width-2-3">
                                             <div class="uk-card-body">
-                                                <h3 class="uk-h1 font-flavour"><?= $fixe['ville']; ?></h3>
+                                                <h3 class="uk-h1 font-flavour uk-card-title"><?= $fixe['ville']; ?></h3>
                                                 <div class="">
                                                     <ul class="uk-list">
                                                         <li><span uk-icon="icon: location;"></span> - <?= $fixe['lieu']; ?></li>

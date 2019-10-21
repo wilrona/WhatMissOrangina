@@ -1,16 +1,16 @@
 <?php /* Template Name: Page Formulaire d'inscription */ ?>
 
-<?php get_header(); ?>
-
 <?php
 
 use App\Controllers\FacebookController;
 use Facebook\Exceptions\FacebookResponseException;
 use Facebook\Exceptions\FacebookSDKException;
+use TypeRocket\Http\Request;
+use TypeRocket\Http\Response;
 
 if(isset($_SESSION) && isset($_SESSION['token_fb'])) {
 
-    $facebook = new FacebookController();
+    $facebook = new FacebookController(new Request(), new Response() );
 
     $fb = $facebook->set_facebook();
     $fb->setDefaultAccessToken($_SESSION['token_fb']);
@@ -49,8 +49,10 @@ if(isset($_SESSION) && isset($_SESSION['token_fb'])) {
 
     $candidat = query_posts($args);
 
+    wp_reset_query();
 
-    $id = $userNode->getField('id');
+    $idfacebook = $userNode->getField('id');
+
     $email = '';
     $first_name = '';
     $last_name = '';
@@ -72,9 +74,9 @@ if(isset($_SESSION) && isset($_SESSION['token_fb'])) {
 else{
     return tr_redirect()->back()->now();
 }
-
-
 ?>
+
+<?php get_header(); ?>
 
 <?php while (have_posts()) : the_post(); ?>
 
@@ -290,7 +292,7 @@ else{
                     <?php if($candidat): ?>
                         <input type="hidden" name="tr[ID]" value="<?= $candidat[0]->ID; ?>"/>
                     <?php endif; ?>
-                    <input type="hidden" name="tr[idfacebook]" value="<?= $id; ?>"/>
+                    <input type="hidden" name="tr[idfacebook]" value="<?= $idfacebook; ?>"/>
                     <button type="submit" class="uk-button uk-button-primary uk-button-large uk-disabled" id="submit">Poursuivre votre inscription</button>
                 </div>
 

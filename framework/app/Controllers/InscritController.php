@@ -6,6 +6,8 @@ use App\Models\Parrain;
 use App\Models\Vote;
 use Spipu\Html2Pdf\Html2Pdf;
 use TypeRocket\Controllers\WPPostController;
+use TypeRocket\Http\Request;
+use TypeRocket\Http\Response;
 
 class InscritController extends WPPostController
 {
@@ -48,7 +50,8 @@ class InscritController extends WPPostController
                 else:
                     $id = wp_insert_post(array(
                         'post_type' => 'inscrit',
-                        'post_title' => $post_title
+                        'post_title' => $post_title,
+                        'post_status' => 'publish'
                     ));
                 endif;
 
@@ -72,30 +75,26 @@ class InscritController extends WPPostController
                     $fields['codeins'] = $codecell;
                 endif;
 
-                $time = \DateTime::createFromFormat('d/m/Y', tr_posts_field('datenais', $id));
+                $time = \DateTime::createFromFormat('d/m/Y', $fields['datenais']);
 
                 $newformat = $time->format('Y-m-d');
 
                 $fields['datenais_format'] = $newformat;
 
+                $fields['year_participe'] = tr_options_field('options.ins_year');
+
                 $post = $this->model->findById($id);
+
                 $post->update($fields);
 
-                $msg = tr_view('email.inscription', ['candidat' => $post]);
-                /**
-                 * Envoyer un email au candidat
-                 */
+                $email = \WP_Mail::init();
+                $email->subject('Inscription Reussie');
+                $email->to(strtolower($fields['email']));
+                $email->template(get_template_directory() .'/email/inscription.php', ['candidat' => $post]);
+                $email->sendAsHTML(true);
+                $email->send();
 
-                $header = "From: no-reply@missorangina-cm.com\r\n";
-                add_filter('wp_mail_content_type',array(__CLASS__, 'set_html_content_type'));
-                add_filter( 'wp_mail_from_name', array(__CLASS__,'custom_wp_mail_from_name') );
-
-                wp_mail(tr_posts_field('email', $post->ID), 'Inscription Reussie', $msg, $header);
-
-                remove_filter ('wp_mail_content_type', array(__CLASS__, 'set_html_content_type'));
-
-
-                return tr_redirect()->toUrl(get_post_permalink(tr_options_field('options.page_parrain')));
+                return tr_redirect()->toUrl(get_post_permalink(tr_options_field('options.page_parrain')).'?idfacebook='.$fields['idfacebook']);
 
             }else{
                 flash('error-data-inscription', 'Le candidat n\'est pas éligible. Pensez à verifier votre date de naissance', 'uk-text-danger');
@@ -125,19 +124,13 @@ class InscritController extends WPPostController
                 $parr->parrain = true;
                 $parr->save();
 
-                $msg = tr_view('email.parrain', ['candidat' => $post]);
 
-                /**
-                 * Envoyer un email avec les informations du candidat
-                 */
-
-                $header = "From: no-reply@missorangina-cm.com\r\n";
-                add_filter('wp_mail_content_type',array(__CLASS__, 'set_html_content_type'));
-                add_filter( 'wp_mail_from_name', array(__CLASS__,'custom_wp_mail_from_name') );
-
-                wp_mail(strtolower($parrain['email']), 'Demande de parrainage', $msg, $header);
-
-                remove_filter ('wp_mail_content_type', array(__CLASS__, 'set_html_content_type'));
+                $email = \WP_Mail::init();
+                $email->subject('Demande de parrainage');
+                $email->to(strtolower($parrain['email']));
+                $email->template(get_template_directory() .'/email/parrain.php', ['candidat' => $post]);
+                $email->sendAsHTML(true);
+                $email->send();
 
             endif;
 
@@ -159,18 +152,13 @@ class InscritController extends WPPostController
 
             foreach ($posts as $post):
 
-                $msg = tr_view('email.inscription', ['candidat' => $post]);
-                /**
-                 * Envoyer un email au candidat
-                 */
 
-                $header = "From: no-reply@missorangina-cm.com\r\n";
-                add_filter('wp_mail_content_type',array(__CLASS__, 'set_html_content_type'));
-                add_filter( 'wp_mail_from_name', array(__CLASS__,'custom_wp_mail_from_name') );
-
-                wp_mail(tr_posts_field('email', $post->ID), 'Reconfirmation du lieu de casting et de votre formulaire d\'inscription', $msg, $header);
-
-                remove_filter ('wp_mail_content_type', array(__CLASS__, 'set_html_content_type'));
+                $email = \WP_Mail::init();
+                $email->subject('Reconfirmation du lieu de casting et de votre formulaire d\'inscription');
+                $email->to(strtolower(tr_posts_field('email', $post->ID)));
+                $email->template(get_template_directory() .'/email/inscription.php', ['candidat' => $post]);
+                $email->sendAsHTML(true);
+                $email->send();
 
             endforeach;
 
@@ -188,18 +176,12 @@ class InscritController extends WPPostController
 
             $post = query_posts($args);
 
-            $msg = tr_view('email.inscription', ['candidat' => $post[0]]);
-            /**
-             * Envoyer un email au candidat
-             */
-
-            $header = "From: no-reply@missorangina-cm.com\r\n";
-            add_filter('wp_mail_content_type',array(__CLASS__, 'set_html_content_type'));
-            add_filter( 'wp_mail_from_name', array(__CLASS__,'custom_wp_mail_from_name') );
-
-            wp_mail(tr_posts_field('email', $post[0]->ID), 'Reconfirmation du lieu de casting et de votre formulaire d\'inscription', $msg, $header);
-
-            remove_filter ('wp_mail_content_type', array(__CLASS__, 'set_html_content_type'));
+            $email = \WP_Mail::init();
+            $email->subject('Reconfirmation du lieu de casting et de votre formulaire d\'inscription');
+            $email->to(strtolower(tr_posts_field('email', $post->ID)));
+            $email->template(get_template_directory() .'/email/inscription.php', ['candidat' => $post[0]]);
+            $email->sendAsHTML(true);
+            $email->send();
 
         endif;
 
@@ -215,7 +197,7 @@ class InscritController extends WPPostController
 
         if(isset($_SESSION) && isset($_SESSION['token_fb_vote'])) {
 
-            $facebook = new FacebookController();
+            $facebook = new FacebookController(new Request(), new Response());
 
             $fb = $facebook->set_facebook();
             $fb->setDefaultAccessToken($_SESSION['token_fb_vote']);
@@ -351,7 +333,7 @@ class InscritController extends WPPostController
                         update_post_meta( $post_id = $id, $key = 'codeins', $value = $codecell );
                     endif;
 
-                    $time = \DateTime::createFromFormat('d/m/Y', tr_posts_field('datenais', $id));
+                    $time = \DateTime::createFromFormat('d/m/Y', $fields['datenais']);
 
                     $newformat = $time->format('Y-m-d');
 
@@ -394,7 +376,7 @@ class InscritController extends WPPostController
                                 update_post_meta( $post_id = $id, $key = 'codeins', $value = $codecell );
                             endif;
 
-                            $time = \DateTime::createFromFormat('d/m/Y', tr_posts_field('datenais', $id));
+                            $time = \DateTime::createFromFormat('d/m/Y', $fields['datenais']);
 
                             $newformat = $time->format('Y-m-d');
 

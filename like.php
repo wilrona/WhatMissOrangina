@@ -1,6 +1,6 @@
 <?php /* Template Name: Page Like Page */ ?>
 
-get_header() ?>
+<?php get_header() ?>
 
 <?php
 

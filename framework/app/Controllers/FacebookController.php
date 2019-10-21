@@ -68,7 +68,7 @@ class FacebookController extends Controller
 
         if(isset($accessToken)){
             $_SESSION['token_fb_vote'] = (string) $accessToken;
-            return tr_redirect()->toHome('/vote')->withFields((string)['idcandidat' => $idcandidat, 'idselection' => $idselection]);
+            return tr_redirect()->toHome('/vote/'.$idcandidat.'/'.$idselection);
 
         }
         elseif($helper->getError()) {
