@@ -5,7 +5,7 @@ add_action('tr_table_search_model', function ($model){
     $model->whereMeta('year_participe', '=', tr_options_field('options.ins_year'));
 });
 
-$tables = tr_tables(25, new \App\Models\Inscrit);
+$tables = tr_tables(25, new \App\Models\Candidat);
 
 $tables->setOrder('id', 'DESC');
 

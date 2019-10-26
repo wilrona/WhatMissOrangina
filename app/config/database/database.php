@@ -18,31 +18,32 @@ function custom_table_example_install()
     $table_name = $wpdb->prefix . 'miss_vote';
     $sql        = "CREATE TABLE $table_name (
 			  id int(11) NOT NULL AUTO_INCREMENT,
+			  idphase int(11) NULL,
+			  idetape int(11) NULL,
+			  idparticipant int(11) NULL,
 			  idcandidat int(11) NULL,
-			  idfacebook varchar(255) NULL,
-			  year varchar (255) NULL,
-			  etape int(11) NULL,
+			  idserie int(11) NULL ,
+			  point int (11) NULL,
+			  type_vote varchar (255) NULL,
 			  PRIMARY KEY (id)
 			) ENGINE=InnoDB DEFAULT CHARSET=utf8;";
 
-
-    $table_name = $wpdb->prefix . 'miss_parrain';
-    $sql_parrain        = "CREATE TABLE $table_name (
+    $table_name = $wpdb->prefix . 'miss_session';
+    $sql        .= "CREATE TABLE $table_name (
 			  id int(11) NOT NULL AUTO_INCREMENT,
-			  email varchar(255) NULL,
-			  idcandidat int NULL,
-			  parrain int(1) NULL,
+			  idparticipant int(11) NULL,
+			  etape_list varchar (255) NULL,
+			  status int(11) default 1,
+			  created_at datetime default CURRENT_TIMESTAMP,
+			  update_at datetime default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
 			  PRIMARY KEY (id)
 			) ENGINE=InnoDB DEFAULT CHARSET=utf8;";
-
-
 
     // we do not execute sql directly
     // we are calling dbDelta which cant migrate database
     require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
 
     dbDelta($sql);
-    dbDelta($sql_parrain);
 
     // save current database version for later use (on upgrade)
     add_option('custom_table_example_db_version', $custom_table_example_db_version);

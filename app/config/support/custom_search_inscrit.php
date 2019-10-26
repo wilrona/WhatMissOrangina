@@ -4,13 +4,12 @@
  * Modification de la taille des columns
  */
 
-use App\Models\Inscrit;
+use App\Models\Candidat;
 
 add_action('admin_head', 'my_column_width');
 
 function my_column_width() {
     echo '<style type="text/css">';
-    echo '.column-datenais { width:150px !important; overflow:hidden }';
     echo '.column-year_participe { width:150px !important; overflow:hidden }';
     echo '</style>';
 }
@@ -23,14 +22,14 @@ function my_column_width() {
  */
 
 //join postmeta for search
-add_filter( 'posts_join' , function($join){
-    global $wpdb;
+//add_filter( 'posts_join' , function($join){
+//    global $wpdb;
 //    if(is_search() && is_admin())
 //    {
 //        $join .= " INNER JOIN $wpdb->postmeta ON $wpdb->posts.ID = $wpdb->postmeta.post_id ";
 //    }
-    return $join;
-});
+//    return $join;
+//});
 
 //add_filter( 'posts_fields', 'filter_function_name_9860', 10, 2 );
 //function filter_function_name_9860( $fields ){
@@ -49,18 +48,18 @@ add_filter( 'posts_join' , function($join){
 //}
 
 //search [your_postmeta_key] for search string
-add_filter( 'posts_where', function( $where )
-{
-    global $wpdb;
-    if(is_search() && is_admin() && $_GET['post_type'] == 'inscrit')
-    {
-        $searchstring = '%' . $wpdb->esc_like( $_GET['s'] ) . '%';
-
-        //search [your_postmeta_key] as well
+//add_filter( 'posts_where', function( $where )
+//{
+//    global $wpdb;
+//    if(is_search() && is_admin() && $_GET['post_type'] == 'inscrit')
+//    {
+//        $searchstring = '%' . $wpdb->esc_like( $_GET['s'] ) . '%';
+//
+//        //search [your_postmeta_key] as well
 //        $where .= $wpdb->prepare(" AND ($wpdb->postmeta.meta_key = 'position' AND $wpdb->postmeta.meta_value LIKE %s) ", $searchstring);
 //        $where .= $wpdb->prepare(" AND ($wpdb->postmeta.meta_key = 'codeins' AND $wpdb->postmeta.meta_value LIKE %s) ", $searchstring);
 //        $where .= $wpdb->prepare(" OR ($wpdb->postmeta.meta_key = 'year_participe' AND $wpdb->postmeta.meta_value LIKE %s) ", $searchstring);
-
+//
 //        if(isset( $_GET['slug'] ) && $_GET['slug'] !='all') {
 //
 //            $year_user = Date('Y') - intval($_GET['slug']);
@@ -75,24 +74,30 @@ add_filter( 'posts_where', function( $where )
 ////            var_dump($where);
 ////            die();
 //        }
-    }
-    return $where;
-});
+//    }
+//    return $where;
+//});
 
 //group by post ID
-add_filter( 'posts_groupby', function ($groupby, $query) {
-
-    global $wpdb;
-
+//add_filter( 'posts_groupby', function ($groupby, $query) {
+//
+//    global $wpdb;
+//
 //    if(is_search() && is_admin())
 //    {
 //        $groupby = "{$wpdb->posts}.ID";
 //    }
-    return $groupby;
+//    return $groupby;
+//
+//}, 10, 2 );
 
-}, 10, 2 );
 
+/**
+ *
+ * Afficher le message de filtre
+ */
 
+//add_action( 'restrict_manage_posts', 'wisdom_filter_tracked_plugins' );
 function wisdom_filter_tracked_plugins() {
 
     global $typenow;
@@ -102,18 +107,20 @@ function wisdom_filter_tracked_plugins() {
 
         $plugins = []; // Options for the filter select field
 
-        $inscrit = new Inscrit();
+        $inscrit = new Candidat();
         $inscrits = $inscrit->findAll()->published()->get();
 
-        foreach ($inscrits as $ins):
+        if($inscrits):
+            foreach ($inscrits as $ins):
 
-            $date = tr_posts_field('year_participe', $ins->ID);
+                $date = tr_posts_field('year_participe', $ins->ID);
 
-            if(!in_array($date, $plugins)):
-                $plugins[] = $date;
-            endif;
+                if(!in_array($date, $plugins)):
+                    $plugins[] = $date;
+                endif;
 
-        endforeach;
+            endforeach;
+        endif;
 
         $current_plugin = '';
         if( isset( $_GET['slug'] ) ) {
@@ -148,12 +155,15 @@ function wisdom_filter_tracked_plugins() {
         </select>
     <?php }
 }
-add_action( 'restrict_manage_posts', 'wisdom_filter_tracked_plugins' );
+
+
 
 /**
  * @param $query
  * Fonction permettant de modifier le resultat de recherche par filtre: 2eme methode
  */
+
+//add_filter( 'parse_query', 'wisdom_sort_plugins_by_slug' );
 function wisdom_sort_plugins_by_slug( $query ) {
 
     global $pagenow, $wpdb;
@@ -246,16 +256,8 @@ function wisdom_sort_plugins_by_slug( $query ) {
 
         $query->set('meta_query', $meta_query);
 
-
-//        var_dump($query->query);
-//        die();
-
-//        $query->query_vars['meta_value'] = array((string)$year_user.'-01-01', (string)$year_user.'-12-31');
-//        $query->query_vars['meta_type'] = 'DATE';
-//        $query->query_vars['meta_compare'] = 'BETWEEN';
     }
 }
-add_filter( 'parse_query', 'wisdom_sort_plugins_by_slug' );
 
 
 

@@ -2,6 +2,7 @@
 namespace App\Http;
 
 use App\Http\Middleware\VerifyNonce;
+use App\Http\Middleware\Whatsapp;
 use TypeRocket\Http\Middleware\AuthAdmin;
 use TypeRocket\Http\Middleware\AuthRead;
 use TypeRocket\Http\Middleware\CanManageCategories;
@@ -13,11 +14,12 @@ use TypeRocket\Http\Middleware\OwnsPostOrCanEditPosts;
 class Kernel extends \TypeRocket\Http\Kernel
 {
     public $middleware = [
-        'hookGlobal' => [],
+        'hookGlobal' => [ AuthRead::class ],
         'restApiFallback' =>
             [ AuthAdmin::class ],
         'resourceGlobal' =>
-            [  VerifyNonce::class ],
+            [  VerifyNonce::class
+            ],
         'user' =>
             [ IsUserOrCanEditUsers::class ],
         'post' =>
@@ -27,6 +29,6 @@ class Kernel extends \TypeRocket\Http\Kernel
         'option' =>
             [ CanManageOptions::class ],
         'term' =>
-            [ CanManageCategories::class ],
+            [ CanManageCategories::class ]
     ];
 }

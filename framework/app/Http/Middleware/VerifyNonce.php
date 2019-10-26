@@ -10,6 +10,8 @@ use \TypeRocket\Http\Middleware\BaseVerify;
  */
 class VerifyNonce extends BaseVerify  {
 
-    public $except = [];
+    public $except = [
+        '/vote/webhook/'
+    ];
 
 }

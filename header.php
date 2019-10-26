@@ -50,7 +50,7 @@
     <?php
     wp_head();
     ?>
-<!--    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,500,600,700%7COpen+Sans:300,400,600" rel="stylesheet">-->
+
 </head>
 
 <body class="uk-position-relative">

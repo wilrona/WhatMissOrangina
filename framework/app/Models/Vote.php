@@ -8,10 +8,12 @@ class Vote extends Model
     protected $resource = 'miss_vote';
 
     protected $fillable = [
-        'idcandidat',
-        'idfacebook',
-        'year',
-        'etape'
+        'idphase',
+        'idetape',
+        'idparticipant',
+        'idserie',
+        'point',
+        'type_vote'
     ];
 
 }

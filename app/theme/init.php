@@ -1,3 +1,3 @@
 <?php
 
-include ('menu/set_menu.php');
+//include ('menu/set_menu.php');

@@ -8,14 +8,14 @@
 |
 */
 
-tr_route()->get()->match('/facebook/connect')->do('js_login_callback@Facebook');
-tr_route()->get()->match('/facebook/vote/([^\/]+)/([^\/]+)/', ['idcandidat', 'idselection'])->do('vote_callback@Facebook');
 
-tr_route()->post()->match('/inscrire')->do('inscription@Inscrit');
-tr_route()->post()->match('/parrainage')->do('parrain@Inscrit');
+//tr_route()->post()->match('/inscrire')->do('inscription@Candidat');
 
-tr_route()->get()->match('/vote/([^\/]+)/([^\/]+)/', ['idcandidat', 'idselection'])->do('vote@Inscrit');
-tr_route()->get()->match('/inscrit/formulaire/([^\/]+)', ['codeins'])->do('fiche@Inscrit');
-tr_route()->get()->match('/inscrit/resend/([^\/]+)', ['codeins'])->do('resend@Inscrit');
-tr_route()->get()->match('/inscrit/import')->do('importer@Inscrit');
-tr_route()->get()->match('/inscrit/export')->do('exporter@Inscrit');
+/**
+ *  Route de serie
+ */
+tr_route()->get()->match('/serie/generate/([^\/]+)',['point'])->do('generer@Ticket');
+
+tr_route()->post()->match('/vote/anonyme')->do('anonyme_vote@Vote');
+
+tr_route()->any()->match('/vote/webhook/')->do('bot@Whatsapp');
