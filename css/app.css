@@ -28,7 +28,7 @@ a {
 
 #header .nav-top{
   /*background-color: rgba(0,0,0,.5);*/
-  padding: 30px 40px;
+  padding: 15px 40px;
 }
 
 #header .uk-navbar-nav>li.uk-active>a, #header  .uk-navbar-nav>li>a:hover{

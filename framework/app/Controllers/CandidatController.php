@@ -21,7 +21,7 @@ class CandidatController extends WPPostController
 
 
 
-        if($fields['post_status_old'] == 'auto-draft'):
+        if(isset($fields['post_status_old']) && $fields['post_status_old'] == 'auto-draft'):
 
             if($this->invalid()){
 

@@ -25,26 +25,33 @@ class VoteController extends Controller
 
         $phase = query_posts($args);
 
+//        $phase_candidat = tr_posts_field('list_candidats', $phase[0]->ID);
+//
+//        $user_id = array();
+//        $numero = array();
+//
+//        foreach ($phase_candidat as $year):
+//            $user_id[] = $year['candidat'];
+//            $numero[$year['candidat']] = $year['codevote'];
+//        endforeach;
+
+//        $candidats_vote = tr_query()->table('wp_posts')
+//                ->select('wp_posts.*', 'SUM(wp_miss_vote.point) as vote')
+//                ->join('wp_miss_vote', 'wp_miss_vote.idcandidat', '=', 'wp_posts.ID')
+//                ->where('wp_posts.ID', 'IN', $user_id)
+//                ->groupBy('wp_posts.ID')
+//                ->findAll()->orderBy('vote', 'DESC')->get();
+
         $phase_candidat = tr_posts_field('list_candidats', $phase[0]->ID);
 
-        $user_id = array();
-        $numero = array();
+        $all_vote = tr_query()->table('wp_miss_vote')->select('SUM(point) as vote')->where('idphase', '=', $phase[0]->ID)->get();
+        $total = $all_vote[0]->vote;
 
-        foreach ($phase_candidat as $year):
-            $user_id[] = $year['candidat'];
-            $numero[$year['candidat']] = $year['codevote'];
-        endforeach;
 
-        $candidats = tr_query()->table('wp_posts')
-                ->select('wp_posts.*', 'SUM(wp_miss_vote.point) as vote')
-                ->join('wp_miss_vote', 'wp_miss_vote.idcandidat', '=', 'wp_posts.ID')
-                ->where('wp_posts.ID', 'IN', $user_id)
-                ->groupBy('wp_posts.ID')
-                ->findAll()->orderBy('vote', 'DESC')->get();
-
-        return tr_view('inscrit.manager', ['phase' => $phase[0], 'candidats' => $candidats, 'numero' => $numero]);
+        return tr_view('inscrit.manager', ['phase' => $phase[0], 'candidats' => $phase_candidat, 'total' => $total]);
 
     }
+
 
     public function anonyme_vote(){
 

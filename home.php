@@ -34,7 +34,7 @@ function pourcentage($user_id){
         ->groupBy('wp_posts.ID')
         ->findAll()->orderBy('vote', 'DESC')->get();
 
-    return $candidats[0]->vote * 100;
+    return $candidats[0] ? $candidats[0]->vote * 100 : 0;
 }
 
 ?>
@@ -42,7 +42,7 @@ function pourcentage($user_id){
 <div class="uk-position-relative uk-background-cover" id="header" style="background-image: url('<?php echo get_template_directory_uri(); ?>/img/fond-pied.jpg');">
     <div class="uk-position-relative uk-cover-container" uk-height-viewport="offset-bottom: true">
         <div class="uk-width-1-1 uk-flex uk-flex-center uk-flex-middle uk-padding-small uk-margin-small-top">
-            <img src="<?php echo get_template_directory_uri(); ?>/img/ban.png" alt="" class="uk-width-1-3">
+<!--            <img src="--><?php //echo get_template_directory_uri(); ?><!--/img/ban.png" alt="" class="uk-width-1-3">-->
         </div>
         <div uk-grid class="uk-padding">
             <?php foreach ($phase_candidat as $candidat): $current_candidat = get_post($candidat['candidat'])?>
@@ -54,14 +54,14 @@ function pourcentage($user_id){
                                 <img src="<?php echo get_template_directory_uri(); ?>/img/logo.png" alt="" class="uk-border-circle" style="width:40px; height: 40px;">
                             </div>
                             <div class="uk-width-expand">
-                                <h3 class="uk-card-title uk-margin-remove-bottom uk-text-truncate"><?= $candidat['codevote'] ?> - <?= $current_candidat->post_title ?>
+                                <h3 class="uk-h4 uk-margin-remove-bottom uk-text-truncate"><?= $candidat['codevote'] ?> - <?= $current_candidat->post_title ?>
                                 </h3>
-                                <p class="uk-text-meta uk-margin-remove-top">
-                                    <progress class="uk-progress progress" value="0" max="100" data-pourcentage="<?= round(pourcentage($candidat['candidat']) / $total, 1)  ?>"></progress>
+                                <p class="uk-text-meta uk-margin-small-top">
+                                    <progress class="uk-progress progress" value="0" max="100" data-pourcentage="<?= pourcentage($candidat['candidat']) ? round(pourcentage($candidat['candidat']) / $total, 1) : pourcentage($candidat['candidat']);  ?>"></progress>
                                 </p>
                             </div>
                             <div class="uk-width-auto uk-text-center">
-                                <span class="uk-text-pourcentage uk-text-bold"><span class="integers"><?= round(pourcentage($candidat['candidat']) / $total, 1) ?></span> %</span>
+                                <span class="uk-text-pourcentage uk-text-bold"><span class="integers"><?= pourcentage($candidat['candidat']) ? round(pourcentage($candidat['candidat']) / $total, 1) : pourcentage($candidat['candidat']);  ?></span> %</span>
                             </div>
                         </div>
                     </div>
