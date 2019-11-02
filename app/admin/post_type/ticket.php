@@ -115,5 +115,6 @@ function genered_ticket_filter($views){
     $views['genered'] = '<a href="'.tr_redirect()->toHome('/serie/generate/1')->url.'" class="primary">Générer des series</a>';
     $views['genered2'] = '<a href="'.tr_redirect()->toHome('/serie/generate/2')->url.'" class="primary">Séries 2 points</a>';
     $views['genered5'] = '<a href="'.tr_redirect()->toHome('/serie/generate/5')->url.'" class="primary">Séries 5 points</a>';
+    $views['genered6'] = '<a href="'.tr_redirect()->toHome('/serie/print')->url.'" class="primary">Imprimer les series</a>';
     return $views;
 }

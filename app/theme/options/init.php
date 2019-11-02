@@ -23,6 +23,17 @@ $form = tr_form()->useJson()->setGroup($this->getName());
 
         echo $form->image('logo')->setLabel('Logo du site web')->setSetting('button', 'Inserer le logo');
 
+        echo '<hr />';
+
+        $villas = [
+            'Affichage en bloc' => 'block',
+            'Affichage en barre' => 'bar',
+            'Affichage en block vertical' => 'vertical',
+            'Affichage candidat single' => 'single'
+        ];
+
+        echo $form->select('type_affiche')->setLabel('Type d\'affichage des resultats')->setOptions($villas);
+
     };
     // Save
     $save = $form->submit('Enregistrement');

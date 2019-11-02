@@ -71,6 +71,10 @@ class VoteController extends Controller
             endif;
         endforeach;
 
+        if(isset($field['show'])):
+            update_post_meta($field['phase'], 'show_current', $field['show']);
+        endif;
+
         return tr_redirect()->back()->now();
 
     }

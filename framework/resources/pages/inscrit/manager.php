@@ -36,6 +36,7 @@ function pourcentage($user_id, $vote=false){
         <th>Nom du candidat</th>
         <th>Nombre de vote</th>
         <th>Pourcentage</th>
+        <th>Show front</th>
         <th class="uk-width-1-6"></th>
     </tr>
     </thead>
@@ -47,6 +48,9 @@ function pourcentage($user_id, $vote=false){
             <td><?= $current_candidat->post_title; ?></td>
             <td><?= pourcentage($candidat['candidat'], true); ?></td>
             <td><?= pourcentage($candidat['candidat']) ? round(pourcentage($candidat['candidat']) / $total, 1) : pourcentage($candidat['candidat']); ?></td>
+            <td>
+                <input type="radio" name="tr[show]" value="<?= $current_candidat->ID; ?>" <?php if(tr_posts_field('show_current', $phase->ID) == $current_candidat->ID): ?> checked <?php endif; ?>>
+            </td>
             <td>
                 <input type="number" name="tr[vote][]" class="uk-input uk-form-width-xsmall" value="0" min="0">
                 <input type="hidden" name="tr[candidat][]" value="<?= $current_candidat->ID; ?>">

@@ -41,9 +41,14 @@ function pourcentage($user_id){
 
 <div class="uk-position-relative uk-background-cover" id="header" style="background-image: url('<?php echo get_template_directory_uri(); ?>/img/fond-pied.jpg');">
     <div class="uk-position-relative uk-cover-container" uk-height-viewport="offset-bottom: true">
+
         <div class="uk-width-1-1 uk-flex uk-flex-center uk-flex-middle uk-padding-small uk-margin-small-top">
-<!--            <img src="--><?php //echo get_template_directory_uri(); ?><!--/img/ban.png" alt="" class="uk-width-1-3">-->
+            <!--            <img src="--><?php //echo get_template_directory_uri(); ?><!--/img/ban.png" alt="" class="uk-width-1-3">-->
         </div>
+
+        <?php $option = tr_options_field('options.type_affiche') ?>
+
+        <?php if(empty($option) || $option == 'block'): ?>
         <div uk-grid class="uk-padding">
             <?php foreach ($phase_candidat as $candidat): $current_candidat = get_post($candidat['candidat'])?>
             <div class="uk-width-1-3">
@@ -69,6 +74,144 @@ function pourcentage($user_id){
             </div>
             <?php endforeach; ?>
         </div>
+
+        <?php endif; ?>
+        <?php if($option == 'bar'): ?>
+
+            <link rel="stylesheet" type="text/css" href="<?php echo get_template_directory_uri(); ?>/js/apex/apexcharts.css">
+
+            <div class="uk-height-large">
+                <div id="chart"></div>
+            </div>
+
+            <script type="application/javascript" src="<?php echo get_template_directory_uri(); ?>/js/apex/apexcharts.js"></script>
+
+            <script>
+                var colors = ['yellow'];
+                var options = {
+                    chart: {
+                        height: 900,
+                        type: 'bar',
+                    },
+                    colors: colors,
+                    plotOptions: {
+                        bar: {
+                            columnWidth: '70%',
+                            distributed: true,
+                            dataLabels: {
+                                position: 'top', // top, center, bottom
+                            },
+                        }
+                    },
+                    dataLabels: {
+                        enabled: true,
+                        formatter: function (val) {
+                            return val + "%";
+                        },
+                        offsetY: -20,
+                        style: {
+                            fontSize: '12px',
+                            colors: ["yellow"]
+                        }
+                    },
+                    series: [{
+                        data: [2.3, 3.1, 4.0, 10.1, 4.0, 3.6, 3.2, 2.3, 1.4, 0.8, 0.5, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2]
+                    }],
+                    xaxis: {
+                        categories: ["01 - Ronald", "02 - Steve Ronald", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "12", "12", "12", "12", "12", "12", "12", "12"],
+                        position: 'bottom',
+                        labels: {
+                            rotate: -45,
+                            style: {
+                                colors: colors,
+                                fontSize: '14px'
+                            }
+
+                        },
+                        axisBorder: {
+                            show: false
+                        },
+                        axisTicks: {
+                            show: false
+                        }
+                    },
+                    yaxis: {
+                        axisBorder: {
+                            show: false
+                        },
+                        axisTicks: {
+                            show: false,
+                        },
+                        labels: {
+                            show: false,
+                            formatter: function (val) {
+                                return val + "%";
+                            }
+                        }
+
+                    },
+                    fill: {
+                        colors: ['#ffff00']
+                    }
+                }
+
+                var chart = new ApexCharts(
+                    document.querySelector("#chart"),
+                    options
+                );
+
+                chart.render();
+            </script>
+
+        <?php endif; ?>
+
+        <?php if($option == 'vertical'): ?>
+
+            <div class="uk-child-width-1-5@m uk-padding" uk-grid uk-height-match="target: > div > .uk-card">
+                <?php foreach ($phase_candidat as $candidat): $current_candidat = get_post($candidat['candidat'])?>
+                <div>
+                    <div class="uk-card uk-card-default card-candidat uk-card-small">
+                        <div class="uk-card-media-top uk-margin-remove uk-h1 uk-text-center uk-padding-small" style="background-color:yellow; color: #016db5;">
+                            <span class="integers"><?= pourcentage($candidat['candidat']) ? round(pourcentage($candidat['candidat']) / $total, 1) : pourcentage($candidat['candidat']);  ?></span> %
+                        </div>
+                        <div class="uk-card-body">
+                            <h3 class="uk-margin-remove-bottom uk-text-truncate uk-text-center"><?= $candidat['codevote'] ?> - <?= $current_candidat->post_title ?></h3>
+                            <progress class="uk-progress progress" value="0" max="100" data-pourcentage="<?= pourcentage($candidat['candidat']) ? round(pourcentage($candidat['candidat']) / $total, 1) : pourcentage($candidat['candidat']);  ?>"></progress>
+                        </div>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+
+            </div>
+
+        <?php endif; ?>
+
+        <?php if($option == 'single'): ?>
+
+            <?php $the_candidat = tr_posts_field('show_current', $phase[0]->ID); ?>
+
+            <?php $result = search($phase_candidat, 'candidat', $the_candidat)[0] ?>
+
+            <div class="uk-child-width-1-2@m uk-padding">
+                <?php $current_candidat = get_post($the_candidat)?>
+                <div class="uk-position-center">
+                    <div class="uk-card uk-card-default card-candidat uk-width-medium">
+                        <div class="uk-card-media-top uk-flex uk-flex-center uk-flex-middle uk-padding">
+                            <img src="<?php echo get_template_directory_uri(); ?>/img/logo.png" alt="">
+                        </div>
+                        <div class="uk-card-media-top uk-margin-remove uk-h1 uk-text-center uk-padding-large" style="background-color:yellow; color: #016db5;">
+                            <span class="integers"><?= pourcentage($result['candidat']) ? round(pourcentage($result['candidat']) / $total, 1) : pourcentage($result['candidat']);  ?></span> %
+                        </div>
+                        <div class="uk-card-body">
+                            <h3 class="uk-margin-remove-bottom uk-text-truncate uk-text-center"><?= $result['codevote'] ?> - <?= $current_candidat->post_title ?></h3>
+                            <progress class="uk-progress progress" value="0" max="100" data-pourcentage="<?= pourcentage($result['candidat']) ? round(pourcentage($result['candidat']) / $total, 1) : pourcentage($result['candidat']);  ?>"></progress>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        <?php endif; ?>
     </div>
     <?php get_template_part('partials/menu') ?>
 </div>

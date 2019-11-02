@@ -3,6 +3,7 @@ namespace App\Controllers;
 
 
 use App\Models\Ticket;
+use Spipu\Html2Pdf\Html2Pdf;
 use TypeRocket\Controllers\WPPostController;
 
 class TicketController extends WPPostController
@@ -75,6 +76,46 @@ class TicketController extends WPPostController
         endif;
 
         return tr_redirect()->back()->now();
+
+    }
+
+    /**
+     *  Imprimer les tickets genere non utilisé
+     */
+
+    public function printer(){
+
+        ob_start();
+
+        $args = array(
+            'post_type' => 'ticket',
+            'posts_per_page' => -1
+        );
+        $args['meta_query'] = array(
+            array(
+                'key' => 'used',
+                'value' => 'no',
+                'compare' => '='
+            )
+        );
+
+        $post = query_posts($args);
+
+        tr_view('pdf.ticket', ['tickets' => $post])::load();
+
+        $content = ob_get_clean();
+
+        http_response_code(200);
+
+        try{
+            $pdf = new HTML2PDF('L', 'A4', 'fr');
+            $pdf->writeHTML($content);
+            $pdf->Output('ticket.pdf');
+        }catch (\HTML2PDF_exception $e){
+            die($e);
+        }
+
+        exit;
 
     }
 

@@ -1,4 +1,4 @@
- <nav class="nav-top uk-box-shadow-small uk-background-default uk-visible@l" uk-navbar uk-sticky >
+ <nav class="nav-top uk-box-shadow-small uk-background-default" uk-navbar uk-sticky >
 
     <div class="uk-navbar-left uk-logo">
         <img src="<?= wp_get_attachment_image_src(tr_options_field('options.logo'), 'full')[0]; ?>" alt="">

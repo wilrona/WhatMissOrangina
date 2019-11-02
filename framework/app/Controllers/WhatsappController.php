@@ -136,11 +136,15 @@ class WhatsappController extends Controller
                                         }else{
                                             // On lui demande quel type de vote il souhaite faire
 
+                                            $this->sendMessage($message['chatId'], "*Votre choix dans cette phase est valable pour toute la soirée.*");
+
+                                            sleep(6);
+
                                             $this->sendMessage($message['chatId'],
                                                 "*Specifie le type de vote que vous souhaitez effectuer ?* \n\n".
                                             "- *HOME* : pour les votes depuis la maison. Vous pouvez voter pour votre candidate à chaque passage. \n".
                                             "- *SITE* : pour les votes sur site à partir des numéros de ticket remis lors de l'achat de votre bouteille orangina. \n\n".
-                                            "Envoyez *SITE* ou *HOME*. Votre choix est valable pour toute la soirée.");
+                                            "Envoyez *SITE* ou *HOME*.");
 
                                              $etape_list = [
                                                  0 => false,
@@ -417,26 +421,24 @@ class WhatsappController extends Controller
 
                                         foreach ($series as $serie):
 
+                                            $serie_current = explode('-', $serie);
+                                            $serie_current = join("", $serie_current);
+
                                             $args = [
                                                 'post_type' => 'ticket',
                                                 'meta_query' => array(
                                                     array(
                                                         'key' => 'serie',
-                                                        'value' => strtoupper($serie)
+                                                        'value' => strtoupper($serie_current)
                                                     )
                                                 )
                                             ];
 
                                             $ticket = query_posts($args);
 
-                                            if(!$ticket){
-                                                $save_ticke = new Ticket();
-                                                $save_ticke->post_title = $serie;
-                                                $save_ticke->post_status = 'publish';
-                                                $save_ticke->serie = strtoupper($serie);
-                                                $save_ticke->genered = 'no';
+                                            if($ticket){
+                                                $save_ticke = (new Ticket())->findById($ticket[0]->ID);
                                                 $save_ticke->used = 'yes';
-                                                $save_ticke->point = 1;
                                                 $save_ticke->save();
 
                                                 $save_vote = new Vote();
@@ -448,7 +450,6 @@ class WhatsappController extends Controller
                                                 $save_vote->idcandidat = $old_vote->idcandidat;
                                                 $save_vote->idserie = $save_ticke->ID;
                                                 $save_vote->save();
-
                                             }else{
                                                 $serie_error = true;
                                             }
@@ -459,7 +460,7 @@ class WhatsappController extends Controller
                                         $string = "Vos tickets de vote ont été enregistrés avec succès.";
 
                                         if($serie_error):
-                                            $string .= "\n\n *Certains de vos tickets de vote n'ont pas été pris en compte car ils ont déja été utilisés ou mal saisies.";
+                                            $string .= "\n\n *Certains de vos tickets de vote n'ont pas été pris en compte car ils n'existent pas ou sont déja été utilisés ou mal saisis.*";
                                         endif;
 
                                         $this->sendMessage($message['chatId'], $string);
