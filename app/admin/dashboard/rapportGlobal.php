@@ -1,35 +1,60 @@
 <?php
 
-$meta_box = tr_meta_box('inscription globale');
-$meta_box->setLabel('Globales');
+$meta_box = tr_meta_box('stat_type_vote');
+$meta_box->setLabel('Statistique type de vote');
 $meta_box->addScreen('dashboard');
 
 $meta_box->setCallback(function(){
 
     $args = [
-        'post_type' => 'inscrit',
-        'posts_per_page' => '-1',
+        'post_type' => 'phase',
         'meta_query' => array(
             array(
-                'key' => 'year_participe',
-                'value' => tr_options_field('options.ins_year'),
+                'key' => 'statut',
+                'value' => 'active',
                 'compare' => '='
             )
         )
     ];
 
-    $candidat = query_posts($args);
+    $phase = query_posts($args);
 
+    if($phase):
+
+
+    $count_home = tr_query()->table('wp_miss_vote')
+                ->where('type_vote', '=', 'HOME')
+                ->where('idphase', '=', $phase[0]->ID)
+                ->count();
+
+    $count_site_ticket = tr_query()->table('wp_miss_vote')
+                ->where('type_vote', '=', 'SITE')
+                ->where('idphase', '=', $phase[0]->ID)
+                ->where('idserie', '!=', null)->count();
+
+    $count_site_anonyme = tr_query()->table('wp_miss_vote')
+        ->select('SUM(point) as vote')
+        ->where('type_vote', '=', 'SITE')
+        ->where('idphase', '=', $phase[0]->ID)
+        ->where('idserie', '=', null)->get();
 ?>
 
     <div class="uk-padding-small" uk-grid>
         <div class="uk-width-1-1">
             <table class="uk-table">
-                <caption><strong>STATISTIQUE GLOBALE <?= tr_options_field('options.ins_year'); ?></strong></caption>
+                <caption><strong>STATISTIQUE TYPE DE VOTE</strong></caption>
                 <tbody>
                     <tr>
-                        <td><strong>Total des inscrits</strong></td>
-                        <td><?= count($candidat); ?> candidats</td>
+                        <td><strong>HOME</strong></td>
+                        <td><?= $count_home ?></td>
+                    </tr>
+                    <tr>
+                        <td><strong>SITE</strong></td>
+                        <td><?= $count_site_ticket ?></td>
+                    </tr>
+                    <tr>
+                        <td><strong>ANONYME</strong></td>
+                        <td><?= $count_site_anonyme[0]->vote ?></td>
                     </tr>
                 </tbody>
             </table>
@@ -38,31 +63,9 @@ $meta_box->setCallback(function(){
     </div>
 
 <?php
+
+    endif;
 });
 
 
 $meta_box->setPriority('high');
-
-
-
-/**
- * Liste des elements du tableau de bord par defaut a initialiser
- */
-
-function remove_dashboard_widgets()
-{
-    global $wp_meta_boxes;
-
-    // Tableau de bord général
-    unset($wp_meta_boxes['dashboard']['normal']['core']['dashboard_right_now']); // Presse-Minute
-    unset($wp_meta_boxes['dashboard']['normal']['core']['dashboard_recent_comments']); // Commentaires récents
-    unset($wp_meta_boxes['dashboard']['normal']['core']['dashboard_incoming_links']);
-    unset($wp_meta_boxes['dashboard']['normal']['core']['dashboard_plugins']); // Extensions
-    unset($wp_meta_boxes['dashboard']['side']['core']['dashboard_quick_press']); // Liens entrant
-    unset($wp_meta_boxes['dashboard']['side']['core']['dashboard_recent_drafts']); // Billets en brouillon
-    unset($wp_meta_boxes['dashboard']['side']['core']['dashboard_primary']); // Blogs WordPress
-    unset($wp_meta_boxes['dashboard']['side']['core']['dashboard_secondary']); // Autres actualités WordPress
-    unset($wp_meta_boxes['dashboard']['normal']['core']['dashboard_activity']); // Active sur le site
-}
-
-add_action('wp_dashboard_setup', 'remove_dashboard_widgets');

@@ -12,9 +12,9 @@ function pourcentage($user_id, $vote=false){
         ->findAll()->orderBy('vote', 'DESC')->get();
 
     if($vote):
-        return $candidats[0] ? $candidats[0]->vote : 0 ;
+        return $candidats ? $candidats[0]->vote : 0 ;
     else:
-        return $candidats[0] ? $candidats[0]->vote * 100 : 0 ;
+        return $candidats ? $candidats[0]->vote * 100 : 0 ;
     endif;
 }
 

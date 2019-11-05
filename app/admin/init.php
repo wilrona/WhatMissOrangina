@@ -13,7 +13,7 @@ include ('post_type/phase.php');
 include('page_admin/manager_vote.php');
 include('page_admin/annonce_vote.php');
 
-//include('dashboard/rapportGlobal.php');
+include('dashboard/rapportGlobal.php');
 //include('dashboard/rapportVille.php');
 //include('dashboard/rapportAge.php');
-//include ('dashboard/welcome.php');
+include ('dashboard/welcome.php');
