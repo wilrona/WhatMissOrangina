@@ -33,14 +33,14 @@ $form = tr_form()->useJson()->setGroup($this->getName());
             'Affichage Message' => 'message'
         ];
 
-        echo $form->select('type_affiche')->setLabel('Type d\'affichage des resultats')->setOptions((string)$villas);
+        echo $form->select('type_affiche')->setLabel('Type d\'affichage des resultats')->setOptions($villas);
 
-        echo $form->select('active_vote')->setLabel('Activation des votes')->setOptions((string)[
+        echo $form->select('active_vote')->setLabel('Activation des votes')->setOptions([
             'Oui' => 1,
             'Non' => 0
         ]);
 
-        echo $form->select('type_vote')->setLabel('Type de vote')->setOptions((string)[
+        echo $form->select('type_vote')->setLabel('Type de vote')->setOptions([
             'Vote SITE' => 'site',
             'Vote HOME' => 'home',
             'Vote HOME et SITE' => 'both'
