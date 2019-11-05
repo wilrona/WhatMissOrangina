@@ -26,6 +26,7 @@ $box1->setCallback(function (){
     echo $form->text('serie')->setLabel('Numéro de serie')->setAttribute('disabled', true);
     echo $form->text('used')->setLabel('Numéro de serie utilisée ?')->setAttribute('disabled', true);
     echo $form->text('genered')->setLabel('Numéro de serie générée ?')->setAttribute('disabled', true);
+    echo $form->text('souche')->setLabel('Numéro de souche')->setAttribute('disabled', true);
     echo $form->text('point')->setLabel('Valeur du ticket')->setAttribute('disabled', true);
 
     echo $form->hidden('post_status_old')->setAttribute('value', tr_posts_field('post_status'));
@@ -38,12 +39,12 @@ $box1->apply($post_type);
 
 add_filter( 'bulk_actions-edit-ticket', 'ticket_bulk_actions' );
 function ticket_bulk_actions( $actions ){
-    unset( $actions[ 'trash' ] );
+//    unset( $actions[ 'trash' ] );
     return $actions;
 }
 
 
-add_action('wp_trash_post', 'prevent_ticket_deletion');
+//add_action('wp_trash_post', 'prevent_ticket_deletion');
 function prevent_ticket_deletion($postid){
     $post = get_post($postid);
     if ($post->post_type == 'ticket') {
@@ -116,5 +117,6 @@ function genered_ticket_filter($views){
     $views['genered2'] = '<a href="'.tr_redirect()->toHome('/serie/generate/2')->url.'" class="primary">Séries 2 points</a>';
     $views['genered5'] = '<a href="'.tr_redirect()->toHome('/serie/generate/5')->url.'" class="primary">Séries 5 points</a>';
     $views['genered6'] = '<a href="'.tr_redirect()->toHome('/serie/print')->url.'" class="primary">Imprimer les series</a>';
+    $views['genered6'] = '<a href="'.tr_redirect()->toHome('/serie/correction')->url.'" class="primary">Corriger les series</a>';
     return $views;
 }

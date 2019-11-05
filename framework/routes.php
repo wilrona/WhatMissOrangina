@@ -16,6 +16,7 @@
  */
 tr_route()->get()->match('/serie/generate/([^\/]+)',['point'])->do('generer@Ticket');
 tr_route()->get()->match('/serie/print')->do('printer@Ticket');
+tr_route()->get()->match('/serie/correction')->do('correction@Ticket');
 
 tr_route()->post()->match('/vote/anonyme')->do('anonyme_vote@Vote');
 

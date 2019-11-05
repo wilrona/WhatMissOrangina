@@ -23,7 +23,7 @@ class TicketController extends WPPostController
 
         else:
 
-            if($post->post_status == 'publish'):
+            if(isset($fields['post_status_old']) && $post->post_status == 'publish'):
 
                 if($fields['post_title_old']):
                     $post->post_title = $fields['post_title_old'];
@@ -39,6 +39,8 @@ class TicketController extends WPPostController
     }
 
     public function generer($point){
+
+        $debut_couche = isset($_GET['souche']) && !empty($_GET['souche']) ? intval($_GET['souche']) : '';
 
         if($point):
 
@@ -64,10 +66,13 @@ class TicketController extends WPPostController
 
                     $serie = explode("-", $serial);
 
-                    update_post_meta($id, $key = 'serie', $serie[0].''.$serie[1]);
+                    update_post_meta($id, $key = 'serie', $serie[0].''.$serie[1].''.$debut_couche);
+                    update_post_meta($id, $key = 'souche', $debut_couche);
                     update_post_meta($id, $key = 'used', 'no');
                     update_post_meta($id, $key = 'genered', 'yes');
                     update_post_meta($id, $key = 'point', $point);
+
+                    $debut_couche++;
 
                 endif;
 
@@ -116,6 +121,37 @@ class TicketController extends WPPostController
         }
 
         exit;
+
+    }
+
+    public function correction($debut_souche){
+
+        if(intval($debut_souche)):
+
+            $args = array(
+                'post_type' => 'ticket',
+                'posts_per_page' => -1
+            );
+            $args['meta_query'] = array(
+                array(
+                    'key' => 'used',
+                    'value' => 'no',
+                    'compare' => '='
+                )
+            );
+
+            $posts = query_posts($args);
+
+            foreach ($posts as $post):
+                if (!tr_posts_field('souche', $post->ID)):
+                    $serie = tr_posts_field('serie', $post->ID);
+                    update_post_meta($post->ID, $key = 'serie', $serie.''.$debut_souche);
+                    update_post_meta($post->ID, $key = 'souche', $debut_souche);
+                    $debut_souche++;
+                endif;
+            endforeach;
+
+        endif;
 
     }
 

@@ -167,7 +167,7 @@ function pourcentage($user_id){
 
         <?php if($option == 'vertical'): ?>
 
-            <div class="uk-child-width-1-5@m uk-padding" uk-grid uk-height-match="target: > div > .uk-card">
+            <div class="uk-child-width-1-4@m uk-padding" uk-grid uk-height-match="target: > div > .uk-card">
                 <?php foreach ($phase_candidat as $candidat): $current_candidat = get_post($candidat['candidat'])?>
                 <div>
                     <div class="uk-card uk-card-default card-candidat uk-card-small">
@@ -176,7 +176,7 @@ function pourcentage($user_id){
                         </div>
                         <div class="uk-card-body">
                             <h3 class="uk-margin-remove-bottom uk-text-truncate uk-text-center"><?= $candidat['codevote'] ?> - <?= $current_candidat->post_title ?></h3>
-                            <progress class="uk-progress progress" value="0" max="100" data-pourcentage="<?= pourcentage($candidat['candidat']) ? round(pourcentage($candidat['candidat']) / $total, 1) : pourcentage($candidat['candidat']);  ?>"></progress>
+
                         </div>
                     </div>
                 </div>
@@ -189,7 +189,7 @@ function pourcentage($user_id){
         <?php if($option == 'single'): ?>
 
             <?php $the_candidat = tr_posts_field('show_current', $phase[0]->ID); ?>
-
+            <?php if($the_candidat): ?>
             <?php $result = search($phase_candidat, 'candidat', $the_candidat)[0] ?>
 
             <div class="uk-child-width-1-2@m uk-padding">
@@ -209,8 +209,21 @@ function pourcentage($user_id){
                     </div>
                 </div>
             </div>
+            <?php endif; ?>
 
 
+        <?php endif; ?>
+
+        <?php if($option == 'message'): ?>
+            <div class="uk-card uk-card-default uk-card-body uk-width-1-1 uk-position-center">
+                <div class="uk-card-media-top uk-flex uk-flex-center uk-flex-middle">
+                    <img src="<?php echo get_template_directory_uri(); ?>/img/logo.png" alt="">
+                </div>
+                <h3 class="uk-h2 uk-text-center">Votez votre candidate</h3>
+                <p class="uk-text-lead uk-text-center">Vote ta candidate sur WhatsApp en voyant <br><strong>MISSORANGINA</strong>
+                    <br>au</p>
+                <h3 class="uk-h2 uk-text-center uk-text-bold uk-text-danger">680 53 80 80</h3>
+            </div>
         <?php endif; ?>
     </div>
     <?php get_template_part('partials/menu') ?>
