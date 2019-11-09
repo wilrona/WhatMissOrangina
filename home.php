@@ -225,6 +225,23 @@ function pourcentage($user_id){
                 <h3 class="uk-h2 uk-text-center uk-text-bold uk-text-danger">680 53 80 80</h3>
             </div>
         <?php endif; ?>
+
+        <?php if($option == 'chrono'): ?>
+            <?php
+                $date = date("Y-m-d H:i:s");
+                $time = strtotime($date);
+                $minute = intval(tr_options_field('options.chrono'));
+                $time = $time + ($minute * 60);
+//                $date = date("Y-m-d H:i:s", $time);
+            ?>
+            <div class="uk-flex uk-flex-center uk-flex-middle uk-position-center">
+                <div uk-countdown="date: <?= date('Y-m-d', $time) ?>T<?= date('H:i:s', $time) ?>+00:00">
+                    <span class="uk-countdown-number uk-countdown-minutes"></span>
+                    <span class="uk-countdown-separator">:</span>
+                    <span class="uk-countdown-number uk-countdown-seconds"></span>
+                </div>
+            </div>
+        <?php endif; ?>
     </div>
     <?php get_template_part('partials/menu') ?>
 </div>

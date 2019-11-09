@@ -30,7 +30,8 @@ $form = tr_form()->useJson()->setGroup($this->getName());
             'Affichage en barre' => 'bar',
             'Affichage en block vertical' => 'vertical',
             'Affichage candidat single' => 'single',
-            'Affichage Message' => 'message'
+            'Affichage Message' => 'message',
+            'Affichage du chrono' => 'chrono'
         ];
 
         echo $form->select('type_affiche')->setLabel('Type d\'affichage des resultats')->setOptions($villas);
@@ -46,6 +47,7 @@ $form = tr_form()->useJson()->setGroup($this->getName());
             'Vote HOME et SITE' => 'both'
         ]);
 
+        echo $form->text('chrono')->setType('number')->setLabel('Valeur du chrono')->setAttribute('value', 15);
     };
     // Save
     $save = $form->submit('Enregistrement');

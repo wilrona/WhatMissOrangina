@@ -45,38 +45,9 @@ class WhatsappController extends Controller
         file_put_contents(get_template_directory().'/input_requests.log',$input.PHP_EOL,FILE_APPEND);
 
 
-        // On indique par whatsapp que l'on a lu le message a l'utilisateur
-
-        // Verifier qu'une phase est active
-        // --- Si pas active, on envoie un message d'indisponibilité de vote et d'attendre la prochaine invitation ou session.
-        // --- Si active, on envoie un message de bienvenue au concours
-
-        // Verifier que l'utilisateur a une session et prendre celle qui est active
-        // --- Si pas de session, on en creer un et on active.
-        // --- Si session, on prend les informations des actions
-
-        // On récupère la liste des actions de la session et on cherche le numero de la Key(clé) qui est active.
-
-        // si key == 0 : on envoie un message de bienvenue et le message lui demandant le type de vote. changement de la valeur de la cle active a 1.
-        // si key == 1 : on attend la valeur SITE ou HOUSE si aucune valeur on envoie reste sur l'erreur.
-        // --- Si l'une des valeurs est ajoutée, on enregistre le candidat dans la phase avec le type de vote et on modifie la phase active a 2
-        // --- On envoie le message de la liste des candidats de la phase avec leur numero
-
-        // si key == 2 : on attend le numero d'un candidat, on effectue la recherche d'un candidat dans la phase qui a ce numero
-        // --- Si pas de candidat, on envoie un message d'erreur
-        // --- Si candidat, on verifie le type de vote du candidat
-        // ------ si type == HOUSE, on envoie le message de fin de vote avec le classement et pourcentage du candidat. on passe toute les keys a true et on desactive la session.
-        // ------ si type == SITE, on envoie le message demandant les numeros de serie qui doivent etre envoye collé par un underscore. on passe la cle a 3
-
-        // si key == 3 : on attend les numeros de serie dans le format demandee
-        // --- Si pas le bon format, on envoie une erreur
-        // --- Si bon format, on verifie les codes
-        // ----- Si le code existe et est deja utilisé, on le prepare dans un message d'erreur
-        // ----- Si le code n'existe pas, on enregistre et celle ci prend la valeur d'un point pour enregistrer le vote
-        // ----- Si le code existe et pas encore utilisé, on recherche la valeur du point pour enregistrer le vote
-
-        // On envoie le message d'erreur des codes et le message de fin de vote avec le classement et pourcentage du candidat. on ferme la session.
-
+        /**
+         * Lancement du vote
+         */
 
         $phase = $this->check_phase();
 
@@ -116,20 +87,7 @@ class WhatsappController extends Controller
 
                                         if(in_array($participant->ID, $participant_id)){ // si le candidat a deja participe
 
-                                            $string = "*Envoyez le numero de votre candidat préféré.*\n\n";
-
-                                            $candidats = tr_posts_field('list_candidats', $phase->ID);
-
-                                            foreach ($candidats as $cand):
-                                                $current_candidat = get_post($cand['candidat']);
-                                                $string .= "*".$cand['codevote']."* - ".$current_candidat->post_title."\n";
-                                            endforeach;
-
-                                            if($type_vote == 'home' || $type_vote == 'both'):
-                                                $string .= "\n *NB*: vous ne pouvez que voter un candidat à la fois si votre choix de vote est *HOME*.";
-                                            endif;
-
-                                            $this->sendMessage($message['chatId'], $string);
+                                            $this->sendCandidateInfos($message['chatId'], $type_vote, $phase);
 
                                             $etape_list = [
                                                 0 => false,
@@ -141,13 +99,12 @@ class WhatsappController extends Controller
                                             update_post_meta($participant->ID, 'current_session', serialize($etape_list));
 
                                         }else{
-                                            // On lui demande quel type de vote il souhaite faire
-
-                                            $this->sendMessage($message['chatId'], "*Votre choix dans cette phase est valable pour toute la soirée.*");
-
-                                            sleep(6);
 
                                             if($type_vote == 'both'):
+
+                                                $this->sendMessage($message['chatId'], "*Votre choix dans cette phase est valable pour toute la soirée.*");
+
+                                                sleep(6);
 
                                                 $this->sendMessage($message['chatId'],
                                                     "*Specifie le type de vote que vous souhaitez effectuer ?* \n\n".
@@ -155,34 +112,52 @@ class WhatsappController extends Controller
                                                 "- *SITE* : pour les votes sur site à partir des numéros de ticket remis lors de l'achat de votre bouteille orangina. \n\n".
                                                 "Envoyez *SITE* ou *HOME*.");
 
+                                                $etape_list = [
+                                                    0 => false,
+                                                    1 => true,
+                                                    2 => false,
+                                                    3 => false,
+                                                    4 => false
+                                                ];
+                                                update_post_meta($participant->ID, 'current_session', serialize($etape_list));
+
                                             endif;
 
                                             if($type_vote == 'home'):
 
-                                                $this->sendMessage($message['chatId'],
-                                                    "*Specifie le type de vote que vous souhaitez effectuer ?* \n\n".
-                                                    "- *HOME* : pour les votes depuis la maison. Vous pouvez voter pour votre candidate à chaque passage. \n".
-                                                    "Envoyez *HOME*.");
+                                                $this->choixTypeVote('home', $phase, $participant);
+
+                                                $this->sendCandidateInfos($message['chatId'], $type_vote, $phase);
+
+                                                $etape_list = [
+                                                    0 => false,
+                                                    1 => false,
+                                                    2 => true,
+                                                    3 => false,
+                                                    4 => false
+                                                ];
+                                                update_post_meta($participant->ID, 'current_session', serialize($etape_list));
 
                                             endif;
 
                                             if($type_vote == 'site'):
 
-                                                $this->sendMessage($message['chatId'],
-                                                    "*Specifie le type de vote que vous souhaitez effectuer ?* \n\n".
-                                                    "- *SITE* : pour les votes sur site à partir des numéros de ticket remis lors de l'achat de votre bouteille orangina\n\n".
-                                                    "Envoyez *SITE*.");
+                                                $this->choixTypeVote('site', $phase, $participant);
+
+                                                $this->sendCandidateInfos($message['chatId'], $type_vote, $phase);
+
+                                                $etape_list = [
+                                                    0 => false,
+                                                    1 => false,
+                                                    2 => true,
+                                                    3 => false,
+                                                    4 => false
+                                                ];
+                                                update_post_meta($participant->ID, 'current_session', serialize($etape_list));
 
                                             endif;
 
-                                            $etape_list = [
-                                                0 => false,
-                                                1 => true,
-                                                2 => false,
-                                                3 => false,
-                                                4 => false
-                                            ];
-                                            update_post_meta($participant->ID, 'current_session', serialize($etape_list));
+
                                         }
 
                                         break;
@@ -200,7 +175,7 @@ class WhatsappController extends Controller
 
                                         $string = "*Hello* \n";
                                         $string .= "Bienvenue sur l'assistant de vote du concours *Miss Orangina*. \n";
-                                        $string .= "Envoyez le mot *missorangina* et suivez les instructions afin de faire valider votre vote. \n\n";
+                                        $string .= "Envoyez le mot *start* et suivez les instructions afin de faire valider votre vote. \n\n";
                                         $string .= "*L'equipe Orangina*";
 
                                         $this->sendMessage($message['chatId'], $string);
@@ -221,52 +196,9 @@ class WhatsappController extends Controller
                                     case '*home*':
                                     case 'home': {
 
-                                        $choix_participant = tr_posts_field('choix_participant', $phase->ID);
-                                        if(!$choix_participant):
-                                            $choix_participant = array();
-                                        endif;
+                                        $this->choixTypeVote($text[0], $phase, $participant);
 
-                                        $choix = array();
-                                        $choix['idparticipant'] = $participant->ID;
-                                        $choix['type_vote'] = mb_strtolower($text[0],'UTF-8');
-
-                                        $choix_participant[] = $choix;
-
-                                        update_post_meta($phase->ID, 'choix_participant', $choix_participant);
-
-                                        $participant_id = tr_posts_field('participant_id', $phase->ID);
-                                        if(!$participant_id):
-                                            $participant_id = array();
-                                        endif;
-
-                                        $participant_id[] = $participant->ID;
-
-                                        update_post_meta($phase->ID, 'participant_id', $participant_id);
-
-                                        $etape_list = [
-                                            0 => false,
-                                            1 => false,
-                                            2 => true,
-                                            3 => false,
-                                            4 => false
-                                        ];
-
-                                        update_post_meta($participant->ID, 'current_session', serialize($etape_list));
-
-                                        $string = "*Envoyez le numero de votre candidat préféré.*\n\n";
-
-                                        $candidats = tr_posts_field('list_candidats', $phase->ID);
-
-                                        foreach ($candidats as $cand):
-                                            $current_candidat = get_post($cand['candidat']);
-                                            $string .= "*".$cand['codevote']."* - ".$current_candidat->post_title."\n";
-                                        endforeach;
-
-                                        if($type_vote == 'home' || $type_vote == 'both'):
-                                            $string .= "\n *NB*: vous ne pouvez que voter un candidat à la fois si votre choix de vote est *HOME*.";
-                                        endif;
-
-                                        $this->sendMessage($message['chatId'], $string);
+                                        $this->sendCandidateInfos($message['chatId'], $type_vote, $phase);
 
                                         break;
                                     }
@@ -376,7 +308,7 @@ class WhatsappController extends Controller
                                             }
                                         }
                                         else {
-                                            $this->sendMessage($message['chatId'], "Aucun candidat ne correspond à ce numéro.");
+                                            $this->sendMessage($message['chatId'], "Aucune candidate ne correspond à ce numéro.");
                                         }
                                         break;
                                     }
@@ -528,6 +460,60 @@ class WhatsappController extends Controller
             }
         }
 
+    }
+
+    public function sendCandidateInfos($chatId, $type_vote, $phase){
+
+        $string = "*Envoyez le numero de votre candidat préféré.*\n\n";
+
+        $candidats = tr_posts_field('list_candidats', $phase->ID);
+
+        foreach ($candidats as $cand):
+            $current_candidat = get_post($cand['candidat']);
+            $string .= "*".$cand['codevote']."* - ".$current_candidat->post_title."\n";
+        endforeach;
+
+        if($type_vote == 'home' || $type_vote == 'both'):
+            $string .= "\n *NB*: vous ne pouvez que voter un candidat à la fois si votre choix de vote est *HOME*.";
+        endif;
+
+        $this->sendMessage($chatId, $string);
+
+    }
+
+    public function choixTypeVote($type_vote, $phase, $participant){
+
+        $choix_participant = tr_posts_field('choix_participant', $phase->ID);
+        if(!$choix_participant):
+            $choix_participant = array();
+        endif;
+
+        $choix = array();
+        $choix['idparticipant'] = $participant->ID;
+        $choix['type_vote'] = mb_strtolower($type_vote,'UTF-8');
+
+        $choix_participant[] = $choix;
+
+        update_post_meta($phase->ID, 'choix_participant', $choix_participant);
+
+        $participant_id = tr_posts_field('participant_id', $phase->ID);
+        if(!$participant_id):
+            $participant_id = array();
+        endif;
+
+        $participant_id[] = $participant->ID;
+
+        update_post_meta($phase->ID, 'participant_id', $participant_id);
+
+        $etape_list = [
+            0 => false,
+            1 => false,
+            2 => true,
+            3 => false,
+            4 => false
+        ];
+
+        update_post_meta($participant->ID, 'current_session', serialize($etape_list));
     }
 
     public function stopMessage($chatId, $phase, $participant){
@@ -702,9 +688,10 @@ class WhatsappController extends Controller
             $this->sendMessage($chatId,
 
                 "*Hello*\n\n".
-                "Bienvenue sur l'assistant de vote du concours *Miss Orangina*.\n".
+                "Bienvenue sur l'assistant de vote du concours *Miss Orangina*.\n\n".
+                "Nous sommes à la phase *".$this->phase->post_title."*\n".
                 "Pour voter votre candidate, envoyez *start* pour lancer la procédure de vote.\n".
-                "Suivez les instructions de bout en bout afin de valider votre vote.\n\n".
+                "Suivez les instructions afin de valider votre vote.\n\n".
                 "Envoyez *stop* pour arrêter ou recommencer la procédure de vote.\n\n".
                 "*L'equipe Orangina.*"
             );

@@ -22,8 +22,11 @@ a {
   font-family: "Flavour", Georgia, serif;
 }
 
+.uk-countdown-number, .uk-countdown-separator{
+  font-size: 20rem !important;
+}
 #header{
-  color: #000000 !important;
+  color: #fff !important;
 }
 
 #header .nav-top{
