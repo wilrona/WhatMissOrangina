@@ -21,16 +21,20 @@ wp_reset_query();
 
 $phase_candidat = tr_posts_field('list_candidats', $phase[0]->ID);
 
-$all_vote = tr_query()->table('wp_miss_vote')->select('SUM(point) as vote')->where('idphase', '=', $phase[0]->ID)->get();
+$all_vote = tr_query()->table('wp_miss_vote')
+    ->select('SUM(point) as vote')
+    ->where('idphase', '=', $phase[0]->ID)
+    ->get();
 
 $total = $all_vote[0]->vote;
 
-function pourcentage($user_id){
+function pourcentage($user_id, $phase_id) {
 
     $candidats = tr_query()->table('wp_posts')
         ->select('wp_posts.*', 'SUM(wp_miss_vote.point) as vote')
         ->join('wp_miss_vote', 'wp_miss_vote.idcandidat', '=', 'wp_posts.ID')
         ->where('wp_posts.ID', 'IN', [$user_id])
+        ->where('wp_miss_vote.idphase', '=', $phase_id)
         ->groupBy('wp_posts.ID')
         ->findAll()->orderBy('vote', 'DESC')->get();
 
@@ -62,11 +66,11 @@ function pourcentage($user_id){
                                 <h3 class="uk-h4 uk-margin-remove-bottom uk-text-truncate"><?= $candidat['codevote'] ?> - <?= $current_candidat->post_title ?>
                                 </h3>
                                 <p class="uk-text-meta uk-margin-small-top">
-                                    <progress class="uk-progress progress" value="0" max="100" data-pourcentage="<?= pourcentage($candidat['candidat']) ? round(pourcentage($candidat['candidat']) / $total, 1) : pourcentage($candidat['candidat']);  ?>"></progress>
+                                    <progress class="uk-progress progress" value="0" max="100" data-pourcentage="<?= pourcentage($candidat['candidat'], $phase[0]->ID) ? round(pourcentage($candidat['candidat'], $phase[0]->ID) / $total, 1) : pourcentage($candidat['candidat'], $phase[0]->ID);  ?>"></progress>
                                 </p>
                             </div>
                             <div class="uk-width-auto uk-text-center">
-                                <span class="uk-text-pourcentage uk-text-bold"><span class="integers"><?= pourcentage($candidat['candidat']) ? round(pourcentage($candidat['candidat']) / $total, 1) : pourcentage($candidat['candidat']);  ?></span> %</span>
+                                <span class="uk-text-pourcentage uk-text-bold"><span class="integers"><?= pourcentage($candidat['candidat'], $phase[0]->ID) ? round(pourcentage($candidat['candidat'], $phase[0]->ID) / $total, 1) : pourcentage($candidat['candidat'], $phase[0]->ID);  ?></span> %</span>
                             </div>
                         </div>
                     </div>
@@ -172,7 +176,7 @@ function pourcentage($user_id){
                 <div>
                     <div class="uk-card uk-card-default card-candidat uk-card-small">
                         <div class="uk-card-media-top uk-margin-remove uk-h1 uk-text-center uk-padding-small" style="background-color:yellow; color: #016db5;">
-                            <span class="integers"><?= pourcentage($candidat['candidat']) ? round(pourcentage($candidat['candidat']) / $total, 1) : pourcentage($candidat['candidat']);  ?></span> %
+                            <span class="integers"><?= pourcentage($candidat['candidat'], $phase[0]->ID) && $total ? round(pourcentage($candidat['candidat'], $phase[0]->ID) / $total, 1) : pourcentage($candidat['candidat'], $phase[0]->ID);  ?></span> %
                         </div>
                         <div class="uk-card-body">
                             <h3 class="uk-margin-remove-bottom uk-text-truncate uk-text-center"><?= $candidat['codevote'] ?> - <?= $current_candidat->post_title ?></h3>
@@ -200,11 +204,11 @@ function pourcentage($user_id){
                             <img src="<?php echo get_template_directory_uri(); ?>/img/logo.png" alt="">
                         </div>
                         <div class="uk-card-media-top uk-margin-remove uk-h1 uk-text-center uk-padding-large" style="background-color:yellow; color: #016db5;">
-                            <span class="integers"><?= pourcentage($result['candidat']) ? round(pourcentage($result['candidat']) / $total, 1) : pourcentage($result['candidat']);  ?></span> %
+                            <span class="integers"><?= pourcentage($result['candidat'], $phase[0]->ID) ? round(pourcentage($result['candidat'], $phase[0]->ID) / $total, 1) : pourcentage($result['candidat'], $phase[0]->ID);  ?></span> %
                         </div>
                         <div class="uk-card-body">
                             <h3 class="uk-margin-remove-bottom uk-text-truncate uk-text-center"><?= $result['codevote'] ?> - <?= $current_candidat->post_title ?></h3>
-                            <progress class="uk-progress progress" value="0" max="100" data-pourcentage="<?= pourcentage($result['candidat']) ? round(pourcentage($result['candidat']) / $total, 1) : pourcentage($result['candidat']);  ?>"></progress>
+                            <progress class="uk-progress progress" value="0" max="100" data-pourcentage="<?= pourcentage($result['candidat'], $phase[0]->ID) ? round(pourcentage($result['candidat'], $phase[0]->ID) / $total, 1) : pourcentage($result['candidat'], $phase[0]->ID);  ?>"></progress>
                         </div>
                     </div>
                 </div>

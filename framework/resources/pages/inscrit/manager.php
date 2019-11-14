@@ -2,12 +2,13 @@
 
 <?php
 
-function pourcentage($user_id, $vote=false){
+function pourcentage($user_id, $phase_id, $vote=false){
 
     $candidats = tr_query()->table('wp_posts')
         ->select('wp_posts.*', 'SUM(wp_miss_vote.point) as vote')
         ->join('wp_miss_vote', 'wp_miss_vote.idcandidat', '=', 'wp_posts.ID')
         ->where('wp_posts.ID', 'IN', [$user_id])
+        ->where('wp_miss_vote.idphase', '=', $phase_id)
         ->groupBy('wp_posts.ID')
         ->findAll()->orderBy('vote', 'DESC')->get();
 
@@ -46,8 +47,8 @@ function pourcentage($user_id, $vote=false){
 
             <td><?= $candidat['codevote'] ?></td>
             <td><?= $current_candidat->post_title; ?></td>
-            <td><?= pourcentage($candidat['candidat'], true); ?></td>
-            <td><?= pourcentage($candidat['candidat']) ? round(pourcentage($candidat['candidat']) / $total, 1) : pourcentage($candidat['candidat']); ?></td>
+            <td><?= pourcentage($candidat['candidat'], $phase->ID, true); ?></td>
+            <td><?= pourcentage($candidat['candidat'], $phase->ID) ? round(pourcentage($candidat['candidat'], $phase->ID) / $total, 1) : pourcentage($candidat['candidat'], $phase->ID); ?></td>
             <td>
                 <input type="radio" name="tr[show]" value="<?= $current_candidat->ID; ?>" <?php if(tr_posts_field('show_current', $phase->ID) == $current_candidat->ID): ?> checked <?php endif; ?>>
             </td>

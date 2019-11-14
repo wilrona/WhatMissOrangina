@@ -42,7 +42,7 @@ class WhatsappController extends Controller
         var_dump($decoded);
         $input = ob_get_contents();
         ob_end_clean();
-        file_put_contents(get_template_directory().'/input_requests.log',$input.PHP_EOL,FILE_APPEND);
+//        file_put_contents(get_template_directory().'/input_requests.log',$input.PHP_EOL,FILE_APPEND);
 
 
         /**
@@ -87,16 +87,28 @@ class WhatsappController extends Controller
 
                                         if(in_array($participant->ID, $participant_id)){ // si le candidat a deja participe
 
-                                            $this->sendCandidateInfos($message['chatId'], $type_vote, $phase);
 
-                                            $etape_list = [
-                                                0 => false,
-                                                1 => false,
-                                                2 => true,
-                                                3 => false,
-                                                4 => false
-                                            ];
-                                            update_post_meta($participant->ID, 'current_session', serialize($etape_list));
+                                            $choix_participant = tr_posts_field('choix_participant', $phase->ID);
+                                            $result = $this->search($choix_participant, 'participant_id', $participant->ID);
+
+                                            if($result['type_vote'] == 'site'):
+
+                                                $this->infosSite($message['chatId']);
+
+                                            else:
+
+                                                $this->sendCandidateInfos($message['chatId'], $type_vote, $phase);
+
+                                                $etape_list = [
+                                                    0 => false,
+                                                    1 => false,
+                                                    2 => true,
+                                                    3 => false,
+                                                    4 => false
+                                                ];
+                                                update_post_meta($participant->ID, 'current_session', serialize($etape_list));
+
+                                            endif;
 
                                         }else{
 
@@ -119,6 +131,7 @@ class WhatsappController extends Controller
                                                     3 => false,
                                                     4 => false
                                                 ];
+
                                                 update_post_meta($participant->ID, 'current_session', serialize($etape_list));
 
                                             endif;
@@ -136,13 +149,46 @@ class WhatsappController extends Controller
                                                     3 => false,
                                                     4 => false
                                                 ];
+
                                                 update_post_meta($participant->ID, 'current_session', serialize($etape_list));
 
                                             endif;
 
                                             if($type_vote == 'site'):
 
+                                                $this->infosSite($message['chatId']);
                                                 $this->choixTypeVote('site', $phase, $participant);
+
+                                            endif;
+
+                                        }
+
+                                        break;
+                                    }
+                                    case '*oui*':
+                                    case 'non':
+                                    case '*non*':
+                                    case 'oui' :{
+
+                                        $choix_participant = tr_posts_field('choix_participant', $phase->ID);
+                                        $result = $this->search($choix_participant, 'participant_id', $participant->ID);
+
+                                        if($result['type_vote'] != 'site') {
+
+
+                                            $string = "Votre choix de vote de la soirée n'est pas un vote sur site. \n";
+                                            $string .= "Le vote sur site est un vote à partir des numéros de ticket remis lors de l'achat de votre bouteille orangina.\n\n";
+                                            $string .= "*L'equipe Orangina*";
+
+                                            $this->sendMessage($message['chatId'], $string);
+
+                                            update_post_meta($participant->ID, 'current_session', null);
+
+                                        }else{
+
+                                            $response = mb_strtolower($text[0],'UTF-8');
+
+                                            if ($response == 'oui' || $response == '*oui*') :
 
                                                 $this->sendCandidateInfos($message['chatId'], $type_vote, $phase);
 
@@ -157,16 +203,30 @@ class WhatsappController extends Controller
 
                                             endif;
 
+                                            if($response == 'non' || $response == '*non*'):
 
+                                                $string = "*Merci de votre participation*\n";
+                                                $string .= "Vous ne pouvez pas poursuivre la procédure de vote car les votes sur *SITE* ne se font qu'avec un ou plusieurs numeros de ticket d'achat.\n";
+                                                $string .= "Vous pouvez vous en procurer auprès de nos hotesses en achetant une bouteille orangina. \n\n";
+                                                $string .= "*L'equipe Orangina*";
+
+                                                $this->sendMessage($message['chatId'], $string);
+                                                $this->endMessage($message['chatId'], false);
+
+                                                update_post_meta($participant->ID, 'current_session', null);
+                                            endif;
                                         }
 
                                         break;
                                     }
+
                                     case '*missorangina*':
                                     case 'missorangina':{
                                         $this->existPhase($message['chatId'], true);
                                         break;
                                     }
+
+                                    case '*stop*':
                                     case 'stop' : {
                                         $this->stopMessage($message['chatId'], $phase, $participant);
                                         break;
@@ -202,6 +262,8 @@ class WhatsappController extends Controller
 
                                         break;
                                     }
+
+                                    case '*stop*':
                                     case 'stop' : {
                                         $this->stopMessage($message['chatId'], $phase, $participant);
                                         break;
@@ -233,6 +295,7 @@ class WhatsappController extends Controller
                                 $text = explode(' ',trim($message['body']));
 
                                 switch(mb_strtolower($text[0],'UTF-8')){
+                                    case '*stop*':
                                     case 'stop' : {
                                         $this->stopMessage($message['chatId'], $phase, $participant);
                                         break;
@@ -280,9 +343,9 @@ class WhatsappController extends Controller
                                             else{
 
                                                 $string = "*Saisissez vos numeros de ticket d'achat.*\n\n";
-                                                $string .= "Il est marqué sur votre ticket sous le format XXX-XXX\n";
+                                                $string .= "Il est marqué sur votre ticket sous le format XXXXXX\n";
                                                 $string .= "Si vous avez plusieurs numéros de ticket, saisissez les en séparant par une virgule (,).\n";
-                                                $string .= "*Exemple* : ERD-RRT,EDG-TG9,... .\n\n";
+                                                $string .= "*Exemple* : 0011134,0000123,... .\n\n";
 //                                            $string .= "*NB* : S'il y'a la présence des charactères, ils sont en majuscule.\n";
 
                                                 $this->sendMessage($message['chatId'], $string);
@@ -314,8 +377,6 @@ class WhatsappController extends Controller
                                     }
                                 }
 
-
-
                                 break;
                             }
                             case 3 : {
@@ -323,13 +384,14 @@ class WhatsappController extends Controller
                                 $text = explode(' ',trim($message['body']));
 
                                 switch(mb_strtolower($text[0],'UTF-8')) {
+                                    case '*stop*':
                                     case 'stop' :
                                     {
                                         $this->stopMessage($message['chatId'], $phase, $participant);
                                         break;
                                     }
-                                    case 'terminez':
-                                    case 'termine': {
+                                    case '*fin*':
+                                    case 'fin': {
 
                                         $old_vote = new Vote();
                                         $old_vote = $old_vote->where('idphase', '=', $phase->ID)
@@ -345,106 +407,133 @@ class WhatsappController extends Controller
 
                                         update_post_meta($participant->ID, 'current_session', null);
 
+                                        break;
+
                                     }
                                     default:{
-                                        $series = explode(',', trim($text[0]));
+                                        $re = '/^\d+(?:,\d+)*$/';
+                                        $serie_without_space = str_replace(' ', '', trim($text[0]));
 
-                                        if($series):
+                                        if(preg_match($re, $serie_without_space)):
 
-                                            $serie_error = false;
+                                            $series = explode(',', $serie_without_space);
 
-                                            $old_vote = new Vote();
-                                            $old_vote = $old_vote->where('idphase', '=', $phase->ID)
-                                                ->where('idetape', '=', tr_options_field('options.sequence_vote'))
-                                                ->where('idparticipant', '=', $participant->ID)
-                                                ->where('point', '=', null)->first();
+                                            if($series):
 
-                                            $error_ticket = array();
+                                                $serie_error = false;
 
-                                            foreach ($series as $serie):
+                                                $old_vote = new Vote();
+                                                $old_vote = $old_vote->where('idphase', '=', $phase->ID)
+                                                    ->where('idetape', '=', tr_options_field('options.sequence_vote'))
+                                                    ->where('idparticipant', '=', $participant->ID)
+                                                    ->where('point', '=', null)->first();
 
-                                                $serie_current = explode('-', $serie);
-                                                $serie_current = join("", $serie_current);
+                                                $error_ticket = array();
+                                                $used_ticket = array();
 
-                                                $args = [
-                                                    'post_type' => 'ticket',
-                                                    'meta_query' => array(
-                                                        array(
-                                                            'key' => 'serie',
-                                                            'value' => strtoupper($serie_current)
-                                                        ),
-                                                        array(
-                                                            'key' => 'used',
-                                                            'value' => 'no'
+                                                foreach ($series as $serie):
+
+                                                    $args = [
+                                                        'post_type' => 'ticket',
+                                                        'meta_query' => array(
+                                                            array(
+                                                                'key' => 'serie',
+                                                                'value' => strtoupper($serie)
+                                                            )
                                                         )
-                                                    )
-                                                ];
+                                                    ];
 
-                                                $ticket = query_posts($args);
+                                                    $ticket = query_posts($args);
 
-                                                if($ticket){
-                                                    $save_ticke = (new Ticket())->findById($ticket[0]->ID);
-                                                    $save_ticke->used = 'yes';
-                                                    $save_ticke->save();
+                                                    if($ticket){
 
-                                                    $save_vote = new Vote();
-                                                    $save_vote->idphase = $phase->ID;
-                                                    $save_vote->idetape = tr_options_field('options.sequence_vote');
-                                                    $save_vote->idparticipant = $participant->ID;
-                                                    $save_vote->point = 1;
-                                                    $save_vote->type_vote = 'SITE';
-                                                    $save_vote->idcandidat = $old_vote->idcandidat;
-                                                    $save_vote->idserie = $save_ticke->ID;
-                                                    $save_vote->save();
-                                                }else{
-                                                    $serie_error = true;
-                                                    $error_ticket[] = $serie;
-                                                }
+                                                        $ticket_used = tr_posts_field('used', $ticket[0]->ID);
 
-                                            endforeach;
+                                                        if($ticket_used == 'no'):
 
-                                            $string = "Vos tickets de vote ont été enregistrés avec succès.";
+                                                            $save_ticket = (new Ticket())->findById($ticket[0]->ID);
+                                                            $save_ticket->used = 'yes';
+                                                            $save_ticket->save();
 
-                                            if($serie_error):
-                                                $string .= "*Certains de vos tickets de vote n'ont pas été pris en compte car ils n'existent pas ou sont déja été utilisés ou mal saisis.*";
-                                                foreach ($error_ticket as $error):
-                                                    $string .= "- *".$error."*";
+                                                            $save_vote = new Vote();
+                                                            $save_vote->idphase = $phase->ID;
+                                                            $save_vote->idetape = tr_options_field('options.sequence_vote');
+                                                            $save_vote->idparticipant = $participant->ID;
+                                                            $save_vote->point = $save_ticket->point;
+                                                            $save_vote->type_vote = 'SITE';
+                                                            $save_vote->idcandidat = $old_vote->idcandidat;
+                                                            $save_vote->idserie = $save_ticket->ID;
+                                                            $save_vote->save();
+
+                                                        else:
+
+                                                            $serie_error = true;
+                                                            $used_ticket[] = $serie;
+
+                                                        endif;
+
+                                                    }else{
+
+                                                        $serie_error = true;
+                                                        $error_ticket[] = $serie;
+
+                                                    }
+
                                                 endforeach;
-                                            endif;
 
-                                            $this->sendMessage($message['chatId'], $string);
+                                                $string = "*Vos tickets de vote ont été enregistrés avec succès.*\n\n";
+                                                $this->sendMessage($message['chatId'], $string);
 
-                                            if(!$serie_error):
+                                                if($serie_error):
 
-                                                $this->pourcentage($message['chatId'], $old_vote->idcandidat, $phase->ID);
+                                                    if($error_ticket):
+                                                        $string = "*Les tickets de vote suivants ne sont pas des tickets de vote whatsapp.* \n\n";
+                                                        foreach ($error_ticket as $error):
+                                                            $string .= "- *".$error."* \n";
+                                                        endforeach;
 
-                                                $old_vote->delete();
+                                                        $string .= "\nProcurez vous auprès de nos hotesses en achetant une bouteille orangina. \n Demandez un ticket de vote whatsapp.";
+                                                        $this->sendMessage($message['chatId'], $string);
+                                                    endif;
 
-                                                $this->endMessage($message['chatId'], false);
+                                                    if($used_ticket):
+                                                        $string = "*Les tickets de vote suivants sont déja utilisés soit par vous ou quelqu'un d'autre.* \n\n";
+                                                        foreach ($used_ticket as $error):
+                                                            $string .= "- *".$error."* \n";
+                                                        endforeach;
+                                                        $this->sendMessage($message['chatId'], $string);
+                                                    endif;
 
-                                                update_post_meta($participant->ID, 'current_session', null);
+                                                endif;
+
+                                                if(!$serie_error):
+
+                                                    $this->pourcentage($message['chatId'], $old_vote->idcandidat, $phase->ID);
+
+                                                    $old_vote->delete();
+
+                                                    $this->endMessage($message['chatId'], false);
+
+                                                    update_post_meta($participant->ID, 'current_session', null);
+
+                                                else:
+
+                                                    $string_message = "Si vous avez d'autres numéros de ticket pour voter votre candidate, veuillez les saisir\n\n";
+                                                    $string_message .= "Ou envoyez *FIN* si vous n'avez plus de ticket à enregistrer.";
+
+                                                    $this->sendMessage(($message['chatId']), $string_message);
+
+                                                endif;
 
                                             else:
-
-                                                $string_message = "Envoyez à nouveau les numéros de ticket qui se trouvent dans la liste précédente en respectant les instructions suivantes.\n\n";
-                                                $string_message .= "Vérifiez que :.\n";
-                                                $string_message .= "- Vous n'avez pas écrit un zero à la place de la lettre o et vice versa.\n";
-                                                $string_message .= "- Vous n'avez pas mis des espaces entre les lettres.\n";
-                                                $string_message .= "- Vous n'avez pas mis des espaces entre les virgules (,) lorsque vous avez saisie plusieurs tickets.\n\n";
-                                                $string_message .= "Ou envoyez *terminez* si vous n'avez plus de ticket à enregistrer.";
-
-                                                $this->sendMessage(($message['chatId']), $string_message);
-
+                                                $this->sendMessage($message['chatId'], "Les numeros de ticket ont été mal saisie. Veuillez reessayer svp!");
                                             endif;
 
-                                        else:
-                                            $this->sendMessage($message['chatId'], "Les numeros de ticket ont été mal saisie. Veuillez reessayer svp!");
                                         endif;
 
                                         break;
                                     }
                                 }
-
 
                                 break;
                             }
@@ -462,9 +551,20 @@ class WhatsappController extends Controller
 
     }
 
+    public function infosSite($chatId){
+
+        $string = "*Avez vous déjà acheter un ticket ?*\n\n";
+        $string .= "Renseignez vous auprès de nos hotesses et demandez d'obtenir un ticket de vote par whatsapp.\n";
+        $string .= "Il vous sera demander plutard de valider vote avec votre numéro de ticket.\n\n";
+        $string .= "Un orangina acheté vous donne droit à un ticket de vote.\n";
+        $string .= "Envoie *OUI* ou *NON*.\n";
+
+        $this->sendMessage($chatId, $string);
+    }
+
     public function sendCandidateInfos($chatId, $type_vote, $phase){
 
-        $string = "*Envoyez le numero de votre candidat préféré.*\n\n";
+        $string = "*Envoyez le numero de votre candidate préférée.*\n\n";
 
         $candidats = tr_posts_field('list_candidats', $phase->ID);
 
@@ -750,7 +850,7 @@ class WhatsappController extends Controller
             'header'  => 'Content-type: application/json',
             'content' => $data]]);
         $response = file_get_contents($url,false,$options);
-        file_put_contents(get_template_directory().'/requests.log',$response.PHP_EOL,FILE_APPEND);
+//        file_put_contents(get_template_directory().'/requests.log',$response.PHP_EOL,FILE_APPEND);
 
     }
 

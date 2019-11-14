@@ -48,7 +48,7 @@ class PhaseController extends WPPostController
                     ];
 
                     $phase = query_posts($args);
-//                    wp_reset_query();
+                    wp_reset_query();
 
                     if($phase):
                         update_post_meta($phase[0]->ID, 'statut', 'desactive');

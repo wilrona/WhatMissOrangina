@@ -44,39 +44,80 @@ class TicketController extends WPPostController
 
         if($point):
 
-            for($j=0; $j<20; $j++):
 
-                $chars = array(0,1,2,3,4,5,6,7,8,9,'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z');
-                $serial = '';
-                $max = count($chars)-1;
+            if($debut_couche):
 
-                for($i=0;$i<6;$i++){
+                $souche = $debut_couche;
 
-                    $serial .= (!($i % 3) && $i ? '-' : '').$chars[rand(0, $max)];
+                for($j=0; $j<25; $j++):
 
-                }
+//                    $chars = array(0,1,2,3,4,5,6,7,8,9,'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z');
+//                    $serial = '';
+//                    $max = count($chars)-1;
+//
+//                    for($i=0;$i<3;$i++){
+//
+//                        $serial .= $chars[rand(0, $max)];
+//
+//                    }
 
-                if(!empty($serial)):
+//                    if(!empty($serial)):
 
-                    $id = wp_insert_post(array(
-                        'post_title' => $serial,
-                        'post_type' => 'ticket',
-                        'post_status' => 'publish'
-                    ));
+                        $id = wp_insert_post(array(
+                            'post_title' => str_pad($debut_couche, 7, 0, STR_PAD_LEFT),
+                            'post_type' => 'ticket',
+                            'post_status' => 'publish'
+                        ));
 
-                    $serie = explode("-", $serial);
+                        update_post_meta($id, $key = 'serie', $debut_couche);
+                        update_post_meta($id, $key = 'souche', $souche);
+                        update_post_meta($id, $key = 'used', 'no');
+                        update_post_meta($id, $key = 'genered', 'yes');
+                        update_post_meta($id, $key = 'point', $point);
 
-                    update_post_meta($id, $key = 'serie', $serie[0].''.$serie[1].''.$debut_couche);
-                    update_post_meta($id, $key = 'souche', $debut_couche);
-                    update_post_meta($id, $key = 'used', 'no');
-                    update_post_meta($id, $key = 'genered', 'yes');
-                    update_post_meta($id, $key = 'point', $point);
+                        $debut_couche++;
 
-                    $debut_couche++;
+//                    endif;
 
-                endif;
+                endfor;
 
-            endfor;
+
+            else:
+
+                for($j=0; $j<20; $j++):
+
+                    $chars = array(0,1,2,3,4,5,6,7,8,9,'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z');
+                    $serial = '';
+                    $max = count($chars)-1;
+
+                    for($i=0;$i<6;$i++){
+
+                        $serial .= (!($i % 3) && $i ? '-' : '').$chars[rand(0, $max)];
+
+                    }
+
+                    if(!empty($serial)):
+
+                        $id = wp_insert_post(array(
+                            'post_title' => $serial,
+                            'post_type' => 'ticket',
+                            'post_status' => 'publish'
+                        ));
+
+                        $serie = explode("-", $serial);
+
+                        update_post_meta($id, $key = 'serie', $serie[0].''.$serie[1]);
+                        update_post_meta($id, $key = 'used', 'no');
+                        update_post_meta($id, $key = 'genered', 'yes');
+                        update_post_meta($id, $key = 'point', $point);
+
+                        $debut_couche++;
+
+                    endif;
+
+                endfor;
+
+            endif;
 
         endif;
 
@@ -124,35 +165,19 @@ class TicketController extends WPPostController
 
     }
 
-    public function correction($debut_souche){
-
-        if(intval($debut_souche)):
+    public function correction(){
 
             $args = array(
                 'post_type' => 'ticket',
                 'posts_per_page' => -1
             );
-            $args['meta_query'] = array(
-                array(
-                    'key' => 'used',
-                    'value' => 'no',
-                    'compare' => '='
-                )
-            );
 
             $posts = query_posts($args);
 
             foreach ($posts as $post):
-                if (!tr_posts_field('souche', $post->ID)):
-                    $serie = tr_posts_field('serie', $post->ID);
-                    update_post_meta($post->ID, $key = 'serie', $serie.''.$debut_souche);
-                    update_post_meta($post->ID, $key = 'souche', $debut_souche);
-                    $debut_souche++;
-                endif;
+                var_dump($post->ID);
+                update_post_meta($post->ID, 'serie', $post->post_title);
             endforeach;
-
-        endif;
-
     }
 
 
