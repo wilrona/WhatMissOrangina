@@ -69,7 +69,7 @@ class TicketController extends WPPostController
                             'post_status' => 'publish'
                         ));
 
-                        update_post_meta($id, $key = 'serie', $debut_couche);
+                        update_post_meta($id, $key = 'serie', str_pad($debut_couche, 7, 0, STR_PAD_LEFT));
                         update_post_meta($id, $key = 'souche', $souche);
                         update_post_meta($id, $key = 'used', 'no');
                         update_post_meta($id, $key = 'genered', 'yes');

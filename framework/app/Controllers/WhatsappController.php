@@ -65,7 +65,7 @@ class WhatsappController extends Controller
 
                     $phone = explode('@', $message['author']);
 
-                    $participant = $this->check_participant($phone[0]);
+                    $participant = $this->check_participant($message['chatId'], $phone[0]);
 
                     $key = $this->session_key($participant);
 
@@ -88,10 +88,13 @@ class WhatsappController extends Controller
                                         if(in_array($participant->ID, $participant_id)){ // si le candidat a deja participe
 
 
+                                            $participant_id = tr_posts_field('participant_id', $phase->ID);
                                             $choix_participant = tr_posts_field('choix_participant', $phase->ID);
-                                            $result = $this->search($choix_participant, 'participant_id', $participant->ID);
 
-                                            if($result['type_vote'] == 'site'):
+                                            $key = array_search($participant->ID, $participant_id);
+                                            $current_choix = $choix_participant[$key];
+
+                                            if($current_choix['type_vote'] == 'site'):
 
                                                 $this->infosSite($message['chatId']);
 
@@ -170,10 +173,13 @@ class WhatsappController extends Controller
                                     case '*non*':
                                     case 'oui' :{
 
+                                        $participant_id = tr_posts_field('participant_id', $phase->ID);
                                         $choix_participant = tr_posts_field('choix_participant', $phase->ID);
-                                        $result = $this->search($choix_participant, 'participant_id', $participant->ID);
 
-                                        if($result['type_vote'] != 'site') {
+                                        $key = array_search($participant->ID, $participant_id);
+                                        $current_choix = $choix_participant[$key];
+
+                                        if($current_choix['type_vote'] != 'site') {
 
 
                                             $string = "Votre choix de vote de la soirée n'est pas un vote sur site. \n";
@@ -433,6 +439,8 @@ class WhatsappController extends Controller
 
                                                 foreach ($series as $serie):
 
+                                                    $serie = str_pad($serie, 7, 0, STR_PAD_LEFT);
+
                                                     $args = [
                                                         'post_type' => 'ticket',
                                                         'meta_query' => array(
@@ -449,7 +457,7 @@ class WhatsappController extends Controller
 
                                                         $ticket_used = tr_posts_field('used', $ticket[0]->ID);
 
-                                                        if($ticket_used == 'no'):
+                                                        if($ticket_used === 'no'):
 
                                                             $save_ticket = (new Ticket())->findById($ticket[0]->ID);
                                                             $save_ticket->used = 'yes';
@@ -459,7 +467,7 @@ class WhatsappController extends Controller
                                                             $save_vote->idphase = $phase->ID;
                                                             $save_vote->idetape = tr_options_field('options.sequence_vote');
                                                             $save_vote->idparticipant = $participant->ID;
-                                                            $save_vote->point = $save_ticket->point;
+                                                            $save_vote->point = 1;
                                                             $save_vote->type_vote = 'SITE';
                                                             $save_vote->idcandidat = $old_vote->idcandidat;
                                                             $save_vote->idserie = $save_ticket->ID;
@@ -606,9 +614,9 @@ class WhatsappController extends Controller
         update_post_meta($phase->ID, 'participant_id', $participant_id);
 
         $etape_list = [
-            0 => false,
+            0 => true,
             1 => false,
-            2 => true,
+            2 => false,
             3 => false,
             4 => false
         ];
@@ -648,13 +656,15 @@ class WhatsappController extends Controller
 
         $all_vote = tr_query()->table('wp_miss_vote')->select('SUM(point) as vote')->where('idphase', '=', $phaseId)->get();
 
-        $last_candidate = get_post($idcandidat);
-        $pourcentage = $resultat_candidat[0]->vote * 100;
-        $pourcentage = round($pourcentage / $all_vote[0]->vote, 1);
-        $string = "Votre candidate *". $last_candidate->post_title. "* a *".$pourcentage."%* de vote. \n\n";
-        $string .= "*Pensez à inviter des amis à vous aider à la soutenir*";
+        if($all_vote[0]->vote > 0):
+            $last_candidate = get_post($idcandidat);
+            $pourcentage = $resultat_candidat[0]->vote * 100;
+            $pourcentage = round($pourcentage / $all_vote[0]->vote, 1);
+            $string = "Votre candidate *". $last_candidate->post_title. "* a *".$pourcentage."%* de vote. \n\n";
+            $string .= "*Pensez à inviter des amis à vous aider à la soutenir*";
 
-        $this->sendMessage($chatId, $string);
+            $this->sendMessage($chatId, $string);
+        endif;
 
     }
 
@@ -675,7 +685,7 @@ class WhatsappController extends Controller
         return $phase ? $phase[0] : null;
     }
 
-    public function check_participant($phone){
+    public function check_participant($chatId, $phone){
 
         $args = [
             'post_type' => 'participant',
@@ -691,10 +701,26 @@ class WhatsappController extends Controller
 
         if($participant):
 
-            update_post_meta($participant[0]->ID, 'last_activity', date('Y-m-d H:i:s'));
+            $can_vote = tr_posts_field('active_vote', $participant[0]->ID);
+
+            if(!$can_vote):
+
+                update_post_meta($participant[0]->ID, 'last_activity', date('Y-m-d H:i:s'));
 
 
-            $result = $participant[0];
+                $result = $participant[0];
+
+            else:
+
+                $string = "Votre numero a été suspendue de vote sur whatsapp car nous remarquons une activité frauduleuse.\n\n";
+                $string .= "Demandez à une hotesse de venir confirmer vos achats.";
+
+                $this->sendMessage($chatId, $string);
+
+                exit();
+
+
+            endif;
 
         else:
 
@@ -803,7 +829,7 @@ class WhatsappController extends Controller
                 "*Hello*\n\n".
                 "Bienvenue sur l'assistant de vote du concours *Miss Orangina*.\n".
                 "Les votes sont achevés pour la phase *".$this->phase->post_title."*.\n\n".
-                "Merci de solliciter notre plateforme pour voter votre candidate favorite.\n".
+                "Merci de solliciter notre assistant pour voter votre candidate favorite.\n".
                 "*L'equipe Orangina.*\n"
             );
 

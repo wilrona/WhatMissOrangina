@@ -27,6 +27,7 @@ $form = tr_form()->useJson()->setGroup($this->getName());
 
         $villas = [
             'Affichage en bloc' => 'block',
+            'Affichage en bloc sans statistique' => 'block_no_stat',
             'Affichage en barre' => 'bar',
             'Affichage en block vertical' => 'vertical',
             'Affichage candidat single' => 'single',

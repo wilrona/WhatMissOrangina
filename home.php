@@ -80,6 +80,30 @@ function pourcentage($user_id, $phase_id) {
         </div>
 
         <?php endif; ?>
+
+        <?php if($option == 'block_no_stat'): ?>
+            <div uk-grid class="uk-padding">
+                <?php foreach ($phase_candidat as $candidat): $current_candidat = get_post($candidat['candidat'])?>
+                    <div class="uk-width-1-2">
+                        <div class="uk-card uk-card-default uk-card-small">
+                            <div class="uk-card-header card-candidat">
+                                <div class="uk-grid-small uk-flex-middle" uk-grid>
+                                    <div class="uk-width-auto">
+                                        <img src="<?php echo get_template_directory_uri(); ?>/img/logo.png" alt="" class="uk-border-circle" style="width:40px; height: 40px;">
+                                    </div>
+                                    <div class="uk-width-expand">
+                                        <h3 class="uk-h4 uk-margin-remove-bottom uk-text-truncate"><?= $candidat['codevote'] ?> - <?= $current_candidat->post_title ?>
+                                        </h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+
+        <?php endif; ?>
+
         <?php if($option == 'bar'): ?>
 
             <link rel="stylesheet" type="text/css" href="<?php echo get_template_directory_uri(); ?>/js/apex/apexcharts.css">

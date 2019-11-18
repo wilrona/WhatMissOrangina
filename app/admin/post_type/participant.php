@@ -51,6 +51,13 @@ $box1->setCallback(function (){
     echo $form->text('telephone')->setLabel('Téléphone du participant <span class="uk-text-danger">*</span>');
     echo $form->text('last_activity')->setLabel('Derniére Activité')->setAttributes(['disabled' => true]);
 
+    echo $form->select('active_vote')->setLabel('Suspendu de vote ?')->setOptions([
+
+        'Non' => 0,
+        'Oui' => 1
+
+    ]);
+
     echo $form->hidden('post_status_old')->setAttribute('value', tr_posts_field('post_status'));
     echo $form->hidden('post_title_old')->setAttribute('value', tr_posts_field('post_title'));
 });

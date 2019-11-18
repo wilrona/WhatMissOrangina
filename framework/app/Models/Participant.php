@@ -12,7 +12,8 @@ class Participant extends WPPost
         'prenom',
         'telephone',
         'last_activity',
-        'date_save'
+        'date_save',
+        'active_vote'
 
     ];
 
